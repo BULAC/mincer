@@ -1,11 +1,6 @@
 # To analyse deeply HTML pages or partials
 from pyquery import PyQuery
 
-# To use design by contract in python
-from contracts import contract
-
-
-@contract
 def once(lst: 'seq[N](bool),N>=0') -> 'bool':
     """
     Return `True` if one and only one element of the sequence is `True`.
@@ -62,23 +57,19 @@ class NoMatchError(Exception):
     pass
 
 
-@contract
-def extract_content_from_html(
-        selector: 'str',
-        expected_content: 'str',
-        html: 'str') -> 'str':
-    """
-    Extract the content of an HTML node from a HTML document according to a
+def extract_content_from_html(selector, expected_content, html):
+    """Extract the content of an HTML node from a HTML document according to a
     JQuery selector and a string mattching that content.
 
     Arguments:
-        selector: a JQuery selector query that define how we select the desired
-            div in the document.
-        expected_content: a string that must be present in the selected node.
-        html: a string containing an HTML document..
+        selector (str): a JQuery selector query that define how we select the
+            desired div in the document.
+        expected_content (str): a string that must be present in the selected
+            node.
+        html (str): a string containing an HTML document..
 
     Returns:
-        A string containing the selected content encapsuled in a div. There
+        str: the selected content encapsuled in a div. There
         could be only one top-level div in the string returned. It may seem
         strange to return exactly the `expected_content` param encapsuled in a
         div but this ensure an interface similar to
@@ -118,21 +109,18 @@ def extract_content_from_html(
     return "<div>{content}</div>".format(content=expected_content)
 
 
-@contract
-def extract_node_from_html(
-        selector: 'str',
-        html: 'str') -> 'str':
+def extract_node_from_html(selector, html):
     """
     Extract one div from a html document according to a JQuery selector.
 
     Arguments:
-        selector: a JQuery selector query that define how we select the desired
-            div in the document.
-        html: a string containing an HTML document..
+        selector (str): a JQuery selector query that define how we select the
+            desired div in the document.
+        html (str): a string containing an HTML document.
 
     Returns:
-        A string containing the selected div. There could be only one top-level
-        div in the string returned.
+        str: the selected div. There could be only one top-level div in the
+            string returned.
 
     Raises:
         MultipleMatchError: Multiple div matched the selector query in the
