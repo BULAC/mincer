@@ -1,0 +1,25 @@
+[[source]]
+
+verify_ssl = true
+url = "https://pypi.python.org/simple"
+name = "pypi"
+
+
+[dev-packages]
+
+pytest = "*"
+sphinxcontrib-httpdomain = "*"
+sphinx = "==1.5.6"
+
+
+[requires]
+
+python_version = "3.4"
+
+
+[packages]
+
+flask = "*"
+pyquery = "*"
+requests = "*"
+pycontracts = "*"
