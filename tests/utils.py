@@ -20,23 +20,35 @@ __license__ = "GNU AGPL V3"
 # To analyse deeply HTML pages or partials
 from pyquery import PyQuery
 
-# To use design by contract in python
-from contracts import contract
-
 
 # TODO: don't use this since we should only return partials
-@contract
-def is_html5_page(page: 'str') -> 'bool':
-    """Helper function to detect if we have a well formated HTML5 page."""
+def is_html5_page(page):
+    """Helper function to detect if we have a well formated HTML5 page.
+
+    Params:
+        page (str): the page to test.
+
+    Returns:
+        bool: True if the page is a well formated HTML5 page, False if not.
+    """
     has_doctype = page.startswith("<!DOCTYPE html>")
     has_html_open_tag = "<html" in page
     has_html_close_tag = "</html>" in page
     return has_doctype and has_html_open_tag and has_html_close_tag
 
 
-@contract
 def is_div(partial: 'str', cls_name: 'str|None'=None) -> 'bool':
-    """Helper function to detect if we have a well formated div partial."""
+    """Helper function to detect if we have a well formated div partial.
+
+    Params:
+        partial (str): an HTML content (partial HTML code) page to test.
+        class_name (str|None): if not `None` the name of the class that the div
+            in `partial` must have.
+
+    Returns:
+        bool: True if `partial` is a well formated div page with the provided
+            class (if provided), False if not.
+    """
     d = PyQuery(partial)
     if cls_name:
         return d.is_("div") and d.has_class(cls_name)
