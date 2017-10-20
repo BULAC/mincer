@@ -1,3 +1,7 @@
+# author: Pierre-Yves Martin <pym.aldebaran@gmail.com>
+# copyright: Copyright (C) 2017 GIP BULAC
+# license: GNU AGPL V3
+
 .PHONY: docs
 # A very good reference makefile https://github.com/requests/requests/blob/master/Makefile
 
