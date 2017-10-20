@@ -34,6 +34,9 @@ from flask import Flask
 # For rendering Jinja2 HTML template as pages
 from flask import render_template
 
+# For easy redirecting to error page
+from flask import abort
+
 # To manipulate HTML DOM using JQuery query syntax
 from pyquery import PyQuery
 
@@ -41,18 +44,51 @@ from pyquery import PyQuery
 # See http://docs.python-requests.org/en/master/
 import requests
 
+# A Python slugify application that handles unicode.
+# See https://github.com/un33k/python-slugify
+from slugify import slugify
+
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
-    from HTTPStatus import BAD_REQUEST
+    from HTTPStatus import NOT_FOUND
 except Exception as e:
-    from http.client import BAD_REQUEST
+    from http.client import NOT_FOUND
 
 # Html extraction tools
 from mincer import utils
 
 # The web application named after the main file itself
 app = Flask(__name__)
+
+
+class Provider(object):
+    """A web data provider for Mincer.
+
+    It can be a search provider or a book list provider."""
+    ALL = {}
+
+    def __init__(self, name, remote_url, result_selector, no_result_selector):
+        self.name = name
+        self.slug = slugify(name)
+        self.remote_url = remote_url
+        self.result_selector = result_selector
+        self.no_result_selector = no_result_selector
+
+        self.ALL[self.slug] = self
+
+
+# TODO remove this abomination of global hidden variable!!!
+Provider(
+    name="koha search",
+    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={search_query:s}&branch_group_limit=",
+    result_selector="#userresults .searchresults",
+    no_result_selector=".span12 p")
+Provider(
+    name="koha book list",
+    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={booklist_id:d}&sortfield=title",
+    result_selector="#usershelves .searchresults",
+    no_result_selector="")
 
 
 @app.route("/")
@@ -65,6 +101,7 @@ def home():
     return ""
 
 
+# TODO improve the status page with at least the logo
 @app.route("/status")
 def status():
     """
@@ -75,8 +112,17 @@ def status():
     return render_template("status.html")
 
 
+@app.route("/status/<string:provider_slug>")
+def status_koha_search(provider_slug):
+    try:
+        provider = Provider.ALL[provider_slug]
+    except KeyError:
+        abort(NOT_FOUND)
+
+    return render_template("provider_status.html", provider=provider)
+
+
 # TODO: return only DIV and never HTML pages (even for errors)
-# TODO: reprace the request param with a direct url param for readability
 @app.route("/koha/liste-de-lecture/<int:booklist_id>")
 def koha_book_list(booklist_id):
     """
