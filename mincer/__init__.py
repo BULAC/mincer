@@ -130,8 +130,10 @@ def status():
     return render_template("status.html")
 
 
+# TODO: change the name of the function to provider_status()
+# TODO: test the case of a inexistant provider
 @app.route("/status/<string:provider_slug>")
-def status_koha_search(provider_slug):
+def provider_status(provider_slug):
     try:
         provider = Provider.ALL[provider_slug]
     except KeyError:
