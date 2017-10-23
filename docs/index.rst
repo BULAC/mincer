@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: images/mincer_logo_with_text.png
+.. image:: ../mincer/static/mincer_logo_with_text.png
 	:alt: Mincer: stuff your websites with the best ingredients
 
 .. image:: https://img.shields.io/badge/License-AGPL%20v3-blue.svg

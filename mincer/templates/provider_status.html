@@ -1,56 +1,43 @@
-<!DOCTYPE html>
-<html lang="fr">
-	<head>
-		<meta charset="utf-8">
-		<title>{{ provider.name }} - status report</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-	</head>
-	<body>
-		<div class="container">
-		  <header>
-				<h1 class="display-4">
-					{{ provider.name }}<br>
-					<small class="text-muted">status report</small>
-				</h1>
-			</header>
-
-			<form>
-				<div class="form-group">
-					<label for="name" class="form-label">Name</label>
-					<input id="name" class="form-control" type="text" aria-describedby="name-help" readonly value="{{ provider.name }}">
-					<small id="name-help" class="form-text text-muted">This is the name you have given to this provider.</small>
-				</div>
-
-				<div class="form-group">
-					<label for="slug" class="form-label">Slug</label>
-					<input id="slug" class="form-control" type="text" aria-describedby="slug-help" readonly value="{{ provider.slug }}">
-					<small id="slug-help" class="form-text text-muted">Name of the provider as it can be used in the url of mincer</small>
-				</div>
-
-				<div class="form-group">
-					<label for="remote-url" class="form-label">Remote address</label>
-					<input id="remote-url" class="form-control" type="text" aria-describedby="remote-url-help" readonly value="{{ provider.remote_url }}">
-					<small id="remote-url-help" class="form-text text-muted">Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url.</small>
-				</div>
-
-				<div class="form-group">
-					<label for="result-selector" class="form-label">Result selector</label>
-					<input id="result-selector" class="form-control" type="text" aria-describedby="result-selector-help" readonly value="{{ provider.result_selector }}">
-					<small id="result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the result list in the result page of the provider.</small>
-				</div>
-
-				<div class="form-group">
-					<label for="no-result-selector" class="form-label">No result selector</label>
-					<input id="no-result-selector" class="form-control" type="text" aria-describedby="no-result-selector-help" readonly value="{{ provider.no_result_selector }}">
-					<small id="no-result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the no result message in the result page of the provider if no result were found.</small>
-				</div>
-
-				<div class="form-group">
-					<label for="no-result-content" class="form-label">No result content</label>
-					<input id="no-result-content" class="form-control" type="text" aria-describedby="no-result-content-help" readonly value="{{ provider.no_result_content }}">
-					<small id="no-result-content-help" class="form-text text-muted">Text of the no result message we expect to find in the result page of the provider if no result were found.</small>
-				</div>
-			</form>
+{% extends "default_page.html" %}
+{% block page_title %}{{ provider.name }}{% endblock %}
+{% block title %}{{ provider.name }}{% endblock %}
+{% block subtitle %}Status report{% endblock %}
+{% block content %}
+	<form>
+		<div class="form-group">
+			<label for="name" class="form-label">Name</label>
+			<input id="name" class="form-control" type="text" aria-describedby="name-help" readonly value="{{ provider.name }}">
+			<small id="name-help" class="form-text text-muted">This is the name you have given to this provider.</small>
 		</div>
-	</body>
-</html>
+
+		<div class="form-group">
+			<label for="slug" class="form-label">Slug</label>
+			<input id="slug" class="form-control" type="text" aria-describedby="slug-help" readonly value="{{ provider.slug }}">
+			<small id="slug-help" class="form-text text-muted">Name of the provider as it can be used in the url of mincer</small>
+		</div>
+
+		<div class="form-group">
+			<label for="remote-url" class="form-label">Remote address</label>
+			<input id="remote-url" class="form-control" type="text" aria-describedby="remote-url-help" readonly value="{{ provider.remote_url }}">
+			<small id="remote-url-help" class="form-text text-muted">Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url.</small>
+		</div>
+
+		<div class="form-group">
+			<label for="result-selector" class="form-label">Result selector</label>
+			<input id="result-selector" class="form-control" type="text" aria-describedby="result-selector-help" readonly value="{{ provider.result_selector }}">
+			<small id="result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the result list in the result page of the provider.</small>
+		</div>
+
+		<div class="form-group">
+			<label for="no-result-selector" class="form-label">No result selector</label>
+			<input id="no-result-selector" class="form-control" type="text" aria-describedby="no-result-selector-help" readonly value="{{ provider.no_result_selector }}">
+			<small id="no-result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the no result message in the result page of the provider if no result were found.</small>
+		</div>
+
+		<div class="form-group">
+			<label for="no-result-content" class="form-label">No result content</label>
+			<input id="no-result-content" class="form-control" type="text" aria-describedby="no-result-content-help" readonly value="{{ provider.no_result_content }}">
+			<small id="no-result-content-help" class="form-text text-muted">Text of the no result message we expect to find in the result page of the provider if no result were found.</small>
+		</div>
+	</form>
+{% endblock %}

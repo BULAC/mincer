@@ -15,9 +15,9 @@
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="mincer_logo_with_text.svg"
-   inkscape:export-filename="/users/pierre-yves.martin/Documents/Portail_documentaire/mincer_logo_with_text.png"
-   inkscape:export-xdpi="68.573959"
-   inkscape:export-ydpi="68.573959">
+   inkscape:export-filename="/users/pierre-yves.martin/Developpement/mincer/mincer/static/mincer_logo_with_text_200px.png"
+   inkscape:export-xdpi="26.786701"
+   inkscape:export-ydpi="26.786701">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -50,7 +50,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
