@@ -234,8 +234,7 @@ def test_koha_search_is_a_provider(client):
 
     # Do we have the essential info in it
     # Provider name
-    assert "koha" in data
-    assert "search" in data
+    assert "koha search" in data
 
     # Slugified name
     assert "koha-search" in data
@@ -249,8 +248,11 @@ def test_koha_search_is_a_provider(client):
     # No result selector
     assert ".span12 p" in data
 
+    # No result content
+    assert "Aucune réponse trouvée dans le catalogue BULAC." in data
 
-def test_koha_book_list_is_a_provider(client):
+
+def test_koha_booklist_is_a_provider(client):
     URL = '/status/koha-booklist'
     response = client.get(URL)
 
@@ -268,8 +270,7 @@ def test_koha_book_list_is_a_provider(client):
 
     # Do we have the essential info in it
     # Provider name
-    assert "koha" in data
-    assert "booklist" in data
+    assert "koha booklist" in data
 
     # Slugified name
     assert "koha-booklist" in data

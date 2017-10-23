@@ -79,12 +79,19 @@ class Provider(object):
     It can be a search provider or a book list provider."""
     ALL = {}
 
-    def __init__(self, name, remote_url, result_selector, no_result_selector):
+    def __init__(
+            self,
+            name,
+            remote_url,
+            result_selector,
+            no_result_selector="",
+            no_result_content=""):
         self.name = name
         self.slug = slugify(name)
         self.remote_url = remote_url
         self.result_selector = result_selector
         self.no_result_selector = no_result_selector
+        self.no_result_content = no_result_content
 
         self.ALL[self.slug] = self
 
@@ -94,12 +101,12 @@ Provider(
     name="koha search",
     remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
     result_selector="#userresults .searchresults",
-    no_result_selector=".span12 p")
+    no_result_selector=".span12 p",
+    no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
 Provider(
     name="koha booklist",
     remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-    result_selector="#usershelves .searchresults",
-    no_result_selector="")
+    result_selector="#usershelves .searchresults")
 
 
 @app.route("/")
@@ -155,9 +162,6 @@ def providers(provider_name, param):
     """
     provider = Provider.ALL[provider_name]
 
-    # TODO: put this in the Provider class attributes
-    NO_RESULT_CONTENT_KOHA = "Aucune réponse trouvée dans le catalogue BULAC."
-
     full_remote_url = provider.remote_url.format(param=param)
 
     # Get the content of the page
@@ -178,7 +182,7 @@ def providers(provider_name, param):
         # Search for a no answer message in the page
         no_answer_div = utils.extract_content_from_html(
             provider.no_result_selector,
-            NO_RESULT_CONTENT_KOHA,
+            provider.no_result_content,
             page)
         return PyQuery(no_answer_div)\
             .add_class(HtmlClasses.NO_RESULT)\

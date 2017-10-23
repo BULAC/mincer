@@ -44,6 +44,12 @@
 					<input id="no-result-selector" class="form-control" type="text" aria-describedby="no-result-selector-help" readonly value="{{ provider.no_result_selector }}">
 					<small id="no-result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the no result message in the result page of the provider if no result were found.</small>
 				</div>
+
+				<div class="form-group">
+					<label for="no-result-content" class="form-label">No result content</label>
+					<input id="no-result-content" class="form-control" type="text" aria-describedby="no-result-content-help" readonly value="{{ provider.no_result_content }}">
+					<small id="no-result-content-help" class="form-text text-muted">Text of the no result message we expect to find in the result page of the provider if no result were found.</small>
+				</div>
 			</form>
 		</div>
 	</body>
