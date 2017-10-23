@@ -72,11 +72,11 @@ class TestMincer(object):
         assert is_html5_page(data)
 
         # ...with the correct title and content
-        assert "ADAPTER - status report" in data
+        assert "Mincer - status report" in data
         assert "Le serveur Mincer fonctionne parfaitement." in data
 
 
-class TestAdapterKohaBooklist(object):
+class TestMincerKohaBooklist(object):
     @pytest.fixture
     def book_list_url(self):
         return '/koha/liste-de-lecture/'
@@ -123,7 +123,7 @@ class TestAdapterKohaBooklist(object):
 
 
 # TODO: Add test for inefficient search selector: no result
-class TestAdapterKohaSearch(object):
+class TestMincerKohaSearch(object):
     @pytest.fixture
     def search_url(self):
         return '/koha/recherche/'
@@ -273,4 +273,3 @@ def test_koha_book_list_is_a_provider(client):
 
     # Result list selector
     assert "#usershelves .searchresults" in data
-
