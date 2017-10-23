@@ -76,18 +76,111 @@ class TestMincer(object):
         assert "Le serveur Mincer fonctionne parfaitement." in data
 
 
-class TestMincerKohaBooklist(object):
-    @pytest.fixture
-    def book_list_url(self):
-        return '/koha/liste-de-lecture/'
+# TODO: Add test for inefficient search selector: no result
+# TODO make a more generic version of the test using parametrized fixture
+class TestGenericKohaSearch(object):
+    def build_url(self, param):
+        BASE_URL = '/providers/koha-search/'
 
-    def test_has_book_list_page(self, client, book_list_url):
+        url = '{url}{param}'.format(
+            url=BASE_URL,
+            param=quote_plus(param))
+
+        return url
+
+    def test_search_works(self, client):
+        # This search returns only a few results
+        SEARCH_QUERY = 'afrique voiture'
+
+        url = self.build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name="searchresults")
+
+        # And we have the correct books in it
+        assert "Transafrique" in data
+        assert "L'amour a le goût des fraises" in data
+        assert "Les chemins de Mahjouba" in data
+
+    def test_return_error_page_with_empty_query(self, client):
+        SEARCH_QUERY = ''
+
+        url = self.build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == NOT_FOUND
+        # TODO: Add more test here to ensure we have a valid HTML partial
+
+    def test_search_works_with_unicode_query(self, client):
+        # This search returns only a few results (in japanese)
+        SEARCH_QUERY = '龍 車 日'  # dragon car day
+
+        url = self.build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name="searchresults")
+
+        # And we have the correct books in it
+        assert "新疆史志" in data
+        assert "永井龍男集" in data
+
+    def test_return_a_no_result_partial_if_no_result_are_found(self, client):
+        # This search returns absolutly no result
+        SEARCH_QUERY = 'zxkml'
+
+        url = self.build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name="no-result")
+
+
+class TestGenericKohaBooklist(object):
+    def build_url(self, param):
+        BASE_URL = '/providers/koha-booklist/'
+
+        url = '{url}{param}'.format(
+            url=BASE_URL,
+            param=quote_plus(param))
+
+        return url
+
+    def test_has_book_list_page(self, client):
         # We are using the ID of of an existing list
-        LIST_ID = 9896
-        URL = '{url}{id:d}'.format(
-            url=book_list_url,
-            id=LIST_ID)
-        response = client.get(URL)
+        LIST_ID = "9896"
+
+        url = self.build_url(LIST_ID)
+        response = client.get(url)
 
         # We have an answer...
         assert response.status_code == OK
@@ -110,105 +203,18 @@ class TestMincerKohaBooklist(object):
         assert "Revue européenne des migrations internationales" in data
         assert "The Cold War in the Third World" in data
 
-    def test_return_error_page_with_empty_list_id(self, client, book_list_url):
+    def test_return_error_page_with_empty_list_id(self, client):
         LIST_ID = ''
-        URL = '{url}{id}'.format(
-            url=book_list_url,
-            id=LIST_ID)
-        response = client.get(URL)
+
+        url = self.build_url(LIST_ID)
+        response = client.get(url)
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
         # TODO: Add more test here to ensure we have a valid HTML partial
 
 
-# TODO: Add test for inefficient search selector: no result
-class TestMincerKohaSearch(object):
-    @pytest.fixture
-    def search_url(self):
-        return '/koha/recherche/'
-
-    def test_search_works(self, client, search_url):
-        # This search returns only a few results
-        SEARCH_QUERY = 'afrique voiture'
-        URL = '{url}{query}'.format(
-            url=search_url,
-            query=quote_plus(SEARCH_QUERY))
-        response = client.get(URL)
-
-        # We have an answer...
-        assert response.status_code == OK
-
-        # ...it's an HTML document...
-        assert response.mimetype == "text/html"
-
-        # Let's convert it for easy inspection
-        data = response.get_data(as_text=True)
-
-        # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
-
-        # And we have the correct books in it
-        assert "Transafrique" in data
-        assert "L'amour a le goût des fraises" in data
-        assert "Les chemins de Mahjouba" in data
-
-    def test_return_error_page_with_empty_query(self, client, search_url):
-        SEARCH_QUERY = ''
-        URL = '{url}{query}'.format(
-            url=search_url,
-            query=quote_plus(SEARCH_QUERY))
-        response = client.get(URL)
-
-        # We have an answer...
-        assert response.status_code == NOT_FOUND
-        # TODO: Add more test here to ensure we have a valid HTML partial
-
-    def test_search_works_with_unicode_query(self, client, search_url):
-        # This search returns only a few results (in japanese)
-        SEARCH_QUERY = '龍 車 日'  # dragon car day
-        URL = '{url}{param}'.format(
-            url=search_url,
-            param=quote_plus(SEARCH_QUERY))
-        response = client.get(URL)
-
-        # We have an answer...
-        assert response.status_code == OK
-
-        # ...it's an HTML document...
-        assert response.mimetype == "text/html"
-
-        # Let's convert it for easy inspection
-        data = response.get_data(as_text=True)
-
-        # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
-
-        # And we have the correct books in it
-        assert "新疆史志" in data
-        assert "永井龍男集" in data
-
-    def test_return_a_no_result_partial_if_no_result_are_found(
-            self, client, search_url):
-        # This search returns absolutly no result
-        SEARCH_QUERY = 'zxkml'
-        URL = '{url}{param}'.format(
-            url=search_url,
-            param=quote_plus(SEARCH_QUERY))
-        response = client.get(URL)
-
-        # We have an answer...
-        assert response.status_code == OK
-
-        # ...it's an HTML document...
-        assert response.mimetype == "text/html"
-
-        # Let's convert it for easy inspection
-        data = response.get_data(as_text=True)
-
-        # ...containing only a <div>
-        assert is_div(data, cls_name="no-result")
-
+# TODO: add test for inexistant provider
 
 def test_koha_search_is_a_provider(client):
     URL = '/status/koha-search'
@@ -245,7 +251,7 @@ def test_koha_search_is_a_provider(client):
 
 
 def test_koha_book_list_is_a_provider(client):
-    URL = '/status/koha-book-list'
+    URL = '/status/koha-booklist'
     response = client.get(URL)
 
     # We have an answer...
@@ -266,7 +272,7 @@ def test_koha_book_list_is_a_provider(client):
     assert "booklist" in data
 
     # Slugified name
-    assert "koha-book-list" in data
+    assert "koha-booklist" in data
 
     # Query url (we don't check for the full one)
     assert "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl" in data

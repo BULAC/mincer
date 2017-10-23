@@ -28,6 +28,9 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# To use clean enumeration type
+from enum import Enum
+
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
 
@@ -62,6 +65,14 @@ from mincer import utils
 app = Flask(__name__)
 
 
+class HtmlClasses(str, Enum):
+    """HTML classes used when generating returned HTML contents."""
+
+    """Class used to embed returned content when we have no results."""
+    NO_RESULT = "no-result"
+
+
+# Poor man database...
 class Provider(object):
     """A web data provider for Mincer.
 
@@ -81,12 +92,12 @@ class Provider(object):
 # TODO remove this abomination of global hidden variable!!!
 Provider(
     name="koha search",
-    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={search_query:s}&branch_group_limit=",
+    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
     result_selector="#userresults .searchresults",
     no_result_selector=".span12 p")
 Provider(
-    name="koha book list",
-    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={booklist_id:d}&sortfield=title",
+    name="koha booklist",
+    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
     result_selector="#usershelves .searchresults",
     no_result_selector="")
 
@@ -123,61 +134,52 @@ def status_koha_search(provider_slug):
 
 
 # TODO: return only DIV and never HTML pages (even for errors)
-@app.route("/koha/liste-de-lecture/<int:booklist_id>")
-def koha_book_list(booklist_id):
-    """
-    Retrieve a book list from the KOHA server of the BULAC.
-
-    :query int booklist_id: numeric id of the book list for KOHA
-
-    :status 200: everything was ok
-    :status 404: when no `booklist_id` is provided
-
-    .. quickref: Liste de lecture; Retrieve a book list from KOHA
-    """
-    URL = "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={booklist_id:d}&sortfield=title"\
-        .format(booklist_id=booklist_id)
-    SELECTOR = "#usershelves .searchresults"
-
-    # Get the content of the page
-    page = requests.get(URL).text
-
-    return utils.extract_node_from_html(SELECTOR, page)
-
-
-# TODO: return only DIV and never HTML pages (even for errors)
-@app.route("/koha/recherche/<string:search_query>")
-def koha_search(search_query):
+@app.route("/providers/<string:provider_name>/<string:param>")
+def providers(provider_name, param):
     """
     Retrieve a search result list from the KOHA server of the BULAC.
 
-    :query string search_query: the terms to search already url encoded
+    :query string provider_name: slugified name of the provider as registered
+        in the database in the database.
+    :query string param: parameter of the request already url encoded
         (meaning space and special char are replaced see `urllib
-        <https://docs.python.org/3.6/library/urllib.html>`_ for reference)
+        <https://docs.python.org/3.6/library/urllib.html>`_ for reference). It
+        could be a search query, an list id... all depend of the context. It
+        will be transfered to the final provider url registered in the
+        database.
 
     :status 200: everything was ok
-    :status 404: when no `search_query` is provided
+    :status 404: when no `param` is provided
 
     .. :quickref: Search; Retrieve search result list from KOHA
     """
-    URL = "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={search_query:s}&branch_group_limit="\
-        .format(search_query=search_query)
-    RESULT_SELECTOR = "#userresults .searchresults"
-    NO_RESULT_SELECTOR = ".span12 p"
-    # In english "No results found for that in BULAC catalog."
-    # in french "Aucune réponse trouvée dans le catalogue BULAC."
+    provider = Provider.ALL[provider_name]
+
+    # TODO: put this in the Provider class attributes
     NO_RESULT_CONTENT_KOHA = "Aucune réponse trouvée dans le catalogue BULAC."
+
+    full_remote_url = provider.remote_url.format(param=param)
 
     # Get the content of the page
     # TODO: copy the accept-language from the recieved request
     #       see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
-    page = requests.get(URL, headers={'accept-language': 'fr-FR'}).text
+    page = requests.get(
+        full_remote_url,
+        headers={'accept-language': 'fr-FR'}).text
 
     try:
         # Search for an answer in the page
-        return utils.extract_node_from_html(RESULT_SELECTOR, page)
+        return utils.extract_node_from_html(
+            provider.result_selector,
+            page)
     except utils.NoMatchError:
+        # TODO: test test the case where this fails for exemple if we have
+        #   a "loading page"
         # Search for a no answer message in the page
         no_answer_div = utils.extract_content_from_html(
-            NO_RESULT_SELECTOR, NO_RESULT_CONTENT_KOHA, page)
-        return PyQuery(no_answer_div).add_class("no-result").outer_html()
+            provider.no_result_selector,
+            NO_RESULT_CONTENT_KOHA,
+            page)
+        return PyQuery(no_answer_div)\
+            .add_class(HtmlClasses.NO_RESULT)\
+            .outer_html()
