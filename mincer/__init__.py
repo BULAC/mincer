@@ -72,6 +72,7 @@ class HtmlClasses(str, Enum):
     NO_RESULT = "no-result"
 
 
+# TODO: Add a selectors_to_remove list of selector that target nodes to remove
 # Poor man database...
 class Provider(object):
     """A web data provider for Mincer.

@@ -280,3 +280,5 @@ def test_koha_booklist_is_a_provider(client):
 
     # Result list selector
     assert "#usershelves .searchresults" in data
+
+# TODO: add test for single ressource provider (koha for example)
