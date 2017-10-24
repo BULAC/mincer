@@ -47,15 +47,6 @@ def client():
 
 
 class TestMincer(object):
-    def test_has_an_empty_root_page(self, client):
-        response = client.get('/')
-
-        # We have an answer...
-        assert response.status_code == OK
-
-        # ...and it's empty
-        assert b"" == response.data
-
     def test_has_status_page(self, client):
         response = client.get('/status')
 
@@ -229,7 +220,7 @@ def test_koha_search_is_a_provider(client):
     # Let's convert it for easy inspection
     data = response.get_data(as_text=True)
 
-    # ...containing only a <div>
+    # Test if we recieved a full HTML page
     assert is_html5_page(data)
 
     # Do we have the essential info in it
@@ -265,7 +256,7 @@ def test_koha_booklist_is_a_provider(client):
     # Let's convert it for easy inspection
     data = response.get_data(as_text=True)
 
-    # ...containing only a <div>
+    # Test if we recieved a full HTML page
     assert is_html5_page(data)
 
     # Do we have the essential info in it
@@ -280,5 +271,28 @@ def test_koha_booklist_is_a_provider(client):
 
     # Result list selector
     assert "#usershelves .searchresults" in data
+
+
+def test_home_page_give_links_to_all_providers(client):
+    response = client.get('/')
+
+    # We have an answer...
+    assert response.status_code == OK
+
+    # ...it's an HTML document...
+    assert response.mimetype == "text/html"
+
+    # Let's convert it for easy inspection
+    data = response.get_data(as_text=True)
+
+    # Test if we recieved a full HTML page
+    assert is_html5_page(data)
+
+    # TODO: Use with has_title() helper
+    assert "Mincer"  # Title
+    assert "Home"  # Subtitle
+    # TODO: Use with has_link() helper
+    assert 'href="/status/koha-search"' in data  # Link #1
+    assert 'href="/status/koha-booklist"' in data  # Link #2
 
 # TODO: add test for single ressource provider (koha for example)

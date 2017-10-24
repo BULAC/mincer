@@ -1,0 +1,53 @@
+{% extends "default_page.html" %}
+{% block page_title %}Mincer Home{% endblock %}
+{% block title %}Mincer{% endblock %}
+{% block subtitle %}Home{% endblock %}
+{% block content %}
+
+<section>
+	<h1>Available providers <small>({{ providers|length }})</small></h1>
+
+	{% for slug, prov in providers|dictsort %}
+	<a
+		class="btn btn-primary btn-lg btn-block"
+		role="button"
+		href="{{ url_for('provider_status', provider_slug=slug) }}">
+		{{ prov.name|capitalize }}
+	</a>
+	{% endfor %}
+</section>
+
+<section>
+	<h1>Admin pages</h1>
+	<div class="container">
+		<div class="row">
+			<a
+			class="btn btn-outline-primary btn-lg col-sm"
+			role="button"
+			href="{{ url_for('status') }}">
+			Global status
+			</a>
+			<a
+			class="btn btn-outline-primary btn-lg col-sm disabled"
+			role="button"
+			href="#">
+			Add new provider
+			</a>
+			<a
+			class="btn btn-outline-primary btn-lg col-sm disabled"
+			role="button"
+			href="#">
+			Modify a provider
+			</a>
+			<a
+			class="btn btn-outline-primary btn-lg col-sm disabled"
+			role="button"
+			href="#">
+			Remove a provider
+			</a>
+			{# Just add new admin pages here #}
+		</div> <!-- /.row -->
+	</div> <!-- /.container -->
+</section>
+
+{% endblock %}

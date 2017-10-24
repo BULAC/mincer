@@ -117,7 +117,7 @@ def home():
 
     .. :quickref: Home; The home page
     """
-    return ""
+    return render_template("home.html", providers=Provider.ALL)
 
 
 # TODO improve the status page with at least the logo
