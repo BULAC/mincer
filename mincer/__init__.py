@@ -169,7 +169,15 @@ def providers(provider_name, param):
 
     .. :quickref: Search; Retrieve search result list from KOHA
     """
-    provider = Provider.ALL[provider_name]
+    try:
+        provider = Provider.ALL[provider_name]
+    except Exception as e:
+        app.logger.error(
+            'Provider %s was asked for "%s" but this provider name '
+            'does not exist.',
+            provider_name,
+            unquote_plus(param))
+        abort(NOT_FOUND)
 
     full_remote_url = provider.remote_url.format(param=param)
 
@@ -187,9 +195,9 @@ def providers(provider_name, param):
             page)
     except utils.NoMatchError:
         app.logger.info(
-            "Provider %s was asked for %s but no result structure could be "
-            "found in it's result page. Now searching for a no result "
-            "structure...",
+            'Provider %s was asked for "%s" but no result structure could be '
+            'found in it\'s result page. Now searching for a no result '
+            'structure...',
             provider_name,
             unquote_plus(param))
 

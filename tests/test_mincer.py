@@ -219,8 +219,6 @@ class TestGenericKohaBooklist(object):
         # TODO: Add more test here to ensure we have a valid HTML partial
 
 
-# TODO: add test for inexistant provider
-
 def test_koha_search_is_a_provider(client):
     URL = '/status/koha-search'
     response = client.get(URL)
@@ -285,6 +283,24 @@ def test_koha_booklist_is_a_provider(client):
 
     # Result list selector
     assert "#usershelves .searchresults" in data
+
+
+def test_return_not_found_for_inexistant_providers_status(client):
+    URL = "/status/dummy"
+
+    response = client.get(URL)
+
+    # We have an answer...
+    assert response.status_code == NOT_FOUND
+
+
+def test_return_not_found_for_inexistant_providers_query(client):
+    URL = "/providers/dummy/abcde"
+
+    response = client.get(URL)
+
+    # We have an answer...
+    assert response.status_code == NOT_FOUND
 
 
 def test_home_page_give_links_to_all_providers(client):
