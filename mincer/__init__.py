@@ -31,11 +31,17 @@ __license__ = "GNU AGPL V3"
 # To use clean enumeration type
 from enum import Enum
 
+# To decode form-encoded values
+from urllib.parse import unquote_plus
+
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
 
 # For rendering Jinja2 HTML template as pages
 from flask import render_template
+
+# For building HTTP response and be able to modify them
+from flask import make_response
 
 # For easy redirecting to error page
 from flask import abort
@@ -144,6 +150,7 @@ def provider_status(provider_slug):
 
 # TODO: return only DIV and never HTML pages (even for errors)
 @app.route("/providers/<string:provider_name>/<string:param>")
+@utils.add_response_headers({"Access-Control-Allow-Origin": "*"})
 def providers(provider_name, param):
     """
     Retrieve a search result list from the KOHA server of the BULAC.
@@ -179,13 +186,20 @@ def providers(provider_name, param):
             provider.result_selector,
             page)
     except utils.NoMatchError:
-        # TODO: test test the case where this fails for exemple if we have
-        #   a "loading page"
-        # Search for a no answer message in the page
-        no_answer_div = utils.extract_content_from_html(
-            provider.no_result_selector,
-            provider.no_result_content,
-            page)
-        return PyQuery(no_answer_div)\
-            .add_class(HtmlClasses.NO_RESULT)\
-            .outer_html()
+        app.logger.info(
+            "Provider %s was asked for %s but no result structure could be "
+            "found in it's result page. Now searching for a no result "
+            "structure...",
+            provider_name,
+            unquote_plus(param))
+
+    # TODO: test test the case where this fails for exemple if we have
+    #   a "loading page"
+    # Search for a no answer message in the page
+    no_answer_div = utils.extract_content_from_html(
+        provider.no_result_selector,
+        provider.no_result_content,
+        page)
+    return PyQuery(no_answer_div)\
+        .add_class(HtmlClasses.NO_RESULT)\
+        .outer_html()

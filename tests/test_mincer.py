@@ -89,6 +89,9 @@ class TestGenericKohaSearch(object):
         # We have an answer...
         assert response.status_code == OK
 
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
         # ...it's an HTML document...
         assert response.mimetype == "text/html"
 
@@ -111,6 +114,7 @@ class TestGenericKohaSearch(object):
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
+
         # TODO: Add more test here to ensure we have a valid HTML partial
 
     def test_search_works_with_unicode_query(self, client):
@@ -122,6 +126,9 @@ class TestGenericKohaSearch(object):
 
         # We have an answer...
         assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
 
         # ...it's an HTML document...
         assert response.mimetype == "text/html"
@@ -146,6 +153,9 @@ class TestGenericKohaSearch(object):
         # We have an answer...
         assert response.status_code == OK
 
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
         # ...it's an HTML document...
         assert response.mimetype == "text/html"
 
@@ -166,7 +176,7 @@ class TestGenericKohaBooklist(object):
 
         return url
 
-    def test_has_book_list_page(self, client):
+    def test_return_result_partial_if_result_are_found(self, client):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
@@ -175,6 +185,9 @@ class TestGenericKohaBooklist(object):
 
         # We have an answer...
         assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
 
         # ...it's an HTML document
         assert response.mimetype == "text/html"
@@ -194,7 +207,7 @@ class TestGenericKohaBooklist(object):
         assert "Revue européenne des migrations internationales" in data
         assert "The Cold War in the Third World" in data
 
-    def test_return_error_page_with_empty_list_id(self, client):
+    def test_return_error_page_when_asking_for_empty_list_id(self, client):
         LIST_ID = ''
 
         url = self.build_url(LIST_ID)
@@ -202,6 +215,7 @@ class TestGenericKohaBooklist(object):
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
+
         # TODO: Add more test here to ensure we have a valid HTML partial
 
 

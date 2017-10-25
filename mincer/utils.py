@@ -17,8 +17,14 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# To create decorator easily
+from functools import wraps
+
 # To analyse deeply HTML pages or partials
 from pyquery import PyQuery
+
+# For building HTTP response and be able to modify them
+from flask import make_response
 
 
 def once(lst: 'seq[N](bool),N>=0') -> 'bool':
@@ -167,3 +173,18 @@ def extract_node_from_html(selector, html):
         raise MultipleMatchError()
 
     return filtered_q.outerHtml()
+
+
+# Snippet taken from http://flask.pocoo.org/snippets/100/
+def add_response_headers(headers={}):
+    """This decorator adds the headers passed in to the response."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            resp = make_response(f(*args, **kwargs))
+            h = resp.headers
+            for header, value in headers.items():
+                h[header] = value
+            return resp
+        return decorated_function
+    return decorator
