@@ -68,7 +68,6 @@ class TestMincer(object):
 
 
 # TODO: Add test for inefficient search selector: no result
-# TODO make a more generic version of the test using parametrized fixture
 class TestGenericKohaSearch(object):
     def build_url(self, param):
         BASE_URL = '/providers/koha-search/'
@@ -114,8 +113,6 @@ class TestGenericKohaSearch(object):
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
-
-        # TODO: Add more test here to ensure we have a valid HTML partial
 
     def test_search_works_with_unicode_query(self, client):
         # This search returns only a few results (in japanese)
@@ -215,8 +212,6 @@ class TestGenericKohaBooklist(object):
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
-
-        # TODO: Add more test here to ensure we have a valid HTML partial
 
 
 def test_koha_search_is_a_provider(client):

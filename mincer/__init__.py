@@ -137,7 +137,6 @@ def status():
     return render_template("status.html")
 
 
-# TODO: test the case of a inexistant provider
 @app.route("/status/<string:provider_slug>")
 def provider_status(provider_slug):
     try:
@@ -148,7 +147,6 @@ def provider_status(provider_slug):
     return render_template("provider_status.html", provider=provider)
 
 
-# TODO: return only DIV and never HTML pages (even for errors)
 @app.route("/providers/<string:provider_name>/<string:param>")
 @utils.add_response_headers({"Access-Control-Allow-Origin": "*"})
 def providers(provider_name, param):

@@ -21,7 +21,6 @@ __license__ = "GNU AGPL V3"
 from pyquery import PyQuery
 
 
-# TODO: don't use this since we should only return partials
 def is_html5_page(page):
     """Helper function to detect if we have a well formated HTML5 page.
 
