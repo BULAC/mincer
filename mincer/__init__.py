@@ -142,6 +142,10 @@ def provider_status(provider_slug):
     try:
         provider = Provider.ALL[provider_slug]
     except KeyError:
+        app.logger.error(
+            'Provider %s was requested for status but this provider name '
+            'does not exist.',
+            provider_slug)
         abort(NOT_FOUND)
 
     return render_template("provider_status.html", provider=provider)
@@ -180,7 +184,7 @@ def providers(provider_name, param):
     full_remote_url = provider.remote_url.format(param=param)
 
     # Get the content of the page
-    # TODO: copy the accept-language from the recieved request
+    # HACK: we force copy the accept-language from the recieved request
     #       see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language
     page = requests.get(
         full_remote_url,
