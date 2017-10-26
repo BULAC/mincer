@@ -151,13 +151,13 @@ def provider_status(provider_slug):
     return render_template("provider_status.html", provider=provider)
 
 
-@app.route("/providers/<string:provider_name>/<string:param>")
+@app.route("/providers/<string:provider_slug>/<string:param>")
 @utils.add_response_headers({"Access-Control-Allow-Origin": "*"})
-def providers(provider_name, param):
+def providers(provider_slug, param):
     """
     Retrieve a search result list from the KOHA server of the BULAC.
 
-    :query string provider_name: slugified name of the provider as registered
+    :query string provider_slug: slugified name of the provider as registered
         in the database in the database.
     :query string param: parameter of the request already url encoded
         (meaning space and special char are replaced see `urllib
@@ -172,12 +172,12 @@ def providers(provider_name, param):
     .. :quickref: Search; Retrieve search result list from KOHA
     """
     try:
-        provider = Provider.ALL[provider_name]
+        provider = Provider.ALL[provider_slug]
     except Exception as e:
         app.logger.error(
             'Provider %s was asked for "%s" but this provider name '
             'does not exist.',
-            provider_name,
+            provider_slug,
             unquote_plus(param))
         abort(NOT_FOUND)
 
@@ -200,7 +200,7 @@ def providers(provider_name, param):
             'Provider %s was asked for "%s" but no result structure could be '
             'found in it\'s result page. Now searching for a no result '
             'structure...',
-            provider_name,
+            provider_slug,
             unquote_plus(param))
 
     # TODO: test test the case where this fails for exemple if we have
