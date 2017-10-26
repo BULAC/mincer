@@ -29,6 +29,10 @@ def is_html5_page(page):
 
     Returns:
         bool: True if the page is a well formated HTML5 page, False if not.
+
+    Examples:
+        >>> is_html5_page("<!DOCTYPE html><html>Hello</html>")
+        True
     """
     has_doctype = page.startswith("<!DOCTYPE html>")
     has_html_open_tag = "<html" in page
@@ -36,7 +40,7 @@ def is_html5_page(page):
     return has_doctype and has_html_open_tag and has_html_close_tag
 
 
-def is_div(partial: 'str', cls_name: 'str|None'=None) -> 'bool':
+def is_div(partial, cls_name=None):
     """Helper function to detect if we have a well formated div partial.
 
     Params:
@@ -47,9 +51,52 @@ def is_div(partial: 'str', cls_name: 'str|None'=None) -> 'bool':
     Returns:
         bool: True if `partial` is a well formated div page with the provided
             class (if provided), False if not.
+
+    Examples:
+        >>> is_div("<div>Plop</div>")
+        True
+
+        >>> is_div("<span>Plop</span>")
+        False
+
+        >>> is_div("<!DOCTYPE html><html>Hello</html>")
+        False
+
+        >>> is_div('<div class="useful">Plop</div>', "useful")
+        True
+
+        >>> is_div('<div class="useless">Plop</div>', "useful")
+        False
     """
     d = PyQuery(partial)
     if cls_name:
         return d.is_("div") and d.has_class(cls_name)
     else:
         return d.is_("div")
+
+
+def has_page_title(page, title):
+    """Helper function to detect if a page as a specific title defined in it's
+    <head> section.
+
+    Params:
+        page (str): an HTML page to test.
+        title (str): title to look for in the page.
+
+    Returns:
+        bool: True if `partial` is a well formated div page with the provided
+            class (if provided), False if not.
+
+    Examples:
+        >>> has_page_title("<!DOCTYPE html><html><head><title>hello</title></head></html>", "hello")
+        True
+
+        >>> has_page_title("<!DOCTYPE html><html><head><title>hello</title></head></html>", "nonono")
+        False
+
+        >>> has_page_title("<!DOCTYPE html><html><head></head></html>", "hello")
+        False
+    """
+    d = PyQuery(page)
+
+    return title == d("head>title").text()

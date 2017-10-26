@@ -32,9 +32,10 @@ try:
 except Exception as e:
     from http.client import OK, NOT_FOUND
 
-# Some useful func to analyse strings and determine if they are HTML
+# Helpers to analyse HTML contents
 from tests.utils import is_div
 from tests.utils import is_html5_page
+from tests.utils import has_page_title
 
 # Test framework that helps you write better programs !
 import pytest
@@ -62,7 +63,8 @@ class TestMincer(object):
         # Test if we recieved a full HTML page
         assert is_html5_page(data)
 
-        # TODO: Use has_title() helper
+        assert has_page_title(data, "Mincer Status report")
+        # TODO: Use has_header_h1() helper
         assert "Mincer" in data  # Title
         assert "Status report" in data  # Subtitle
 
@@ -324,7 +326,8 @@ def test_home_page_give_links_to_all_providers(client):
     # Test if we recieved a full HTML page
     assert is_html5_page(data)
 
-    # TODO: Use with has_title() helper
+    assert has_page_title(data, "Mincer Home")
+    # TODO: Use has_header_h1() helper
     assert "Mincer"  # Title
     assert "Home"  # Subtitle
     # TODO: Use with has_link() helper

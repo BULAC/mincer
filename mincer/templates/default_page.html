@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-		<title>Mincer - {% block page_title %}Default page title{% endblock %}</title>
+		<title>{{ title|capitalize }} {{ subtitle|capitalize }}</title>
 		{% endblock %}
 	</head>
 	<body>
@@ -16,8 +16,8 @@
 					alt="Mincer logo"
 				>
 				<h1 class="display-4 d-inline">
-					{% block title %}Default title{% endblock %}
-					<small class="text-muted">{% block subtitle %}Default subtitle{% endblock %}</small>
+					{{ title|capitalize }}
+					<small class="text-muted">{{ subtitle|capitalize }}</small>
 				</h1>
 			</header>
 			{% block content %}

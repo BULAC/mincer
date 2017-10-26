@@ -123,7 +123,11 @@ def home():
 
     .. :quickref: Home; The home page
     """
-    return render_template("home.html", providers=Provider.ALL)
+    return render_template(
+        "home.html",
+        providers=Provider.ALL,
+        title="Mincer",
+        subtitle="Home")
 
 
 # TODO improve the status page with at least the logo
@@ -134,7 +138,11 @@ def status():
 
     .. :quickref: Status; Get status of all providers
     """
-    return render_template("status.html", providers=Provider.ALL)
+    return render_template(
+        "status.html",
+        providers=Provider.ALL,
+        title="Mincer",
+        subtitle="Status report")
 
 
 @app.route("/status/<string:provider_slug>")
@@ -148,7 +156,11 @@ def provider_status(provider_slug):
             provider_slug)
         abort(NOT_FOUND)
 
-    return render_template("provider_status.html", provider=provider)
+    return render_template(
+        "provider_status.html",
+        provider=provider,
+        title=provider.name,
+        subtitle="Status report")
 
 
 @app.route("/providers/<string:provider_slug>/<string:param>")
