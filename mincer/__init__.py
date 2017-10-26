@@ -134,7 +134,7 @@ def status():
 
     .. :quickref: Status; Get status of all providers
     """
-    return render_template("status.html")
+    return render_template("status.html", providers=Provider.ALL)
 
 
 @app.route("/status/<string:provider_slug>")

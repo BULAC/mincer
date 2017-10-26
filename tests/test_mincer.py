@@ -62,9 +62,20 @@ class TestMincer(object):
         # Test if we recieved a full HTML page
         assert is_html5_page(data)
 
-        # ...with the correct title and content
-        assert "Mincer - status report" in data
-        assert "Le serveur Mincer fonctionne parfaitement." in data
+        # TODO: Use has_title() helper
+        assert "Mincer" in data  # Title
+        assert "Status report" in data  # Subtitle
+
+        # TODO: Use has_table() helper
+        assert "<table" in data
+        assert "Provider's name" in data
+        assert "Server online?" in data
+        assert "Server responding?" in data
+        assert "Correctly formed answer?" in data
+
+        # TODO: Use has_link() helper
+        assert 'href="/status/koha-search"' in data  # Link #1
+        assert 'href="/status/koha-booklist"' in data  # Link #2
 
 
 # TODO: Add test for inefficient search selector: no result
