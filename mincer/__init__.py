@@ -193,7 +193,11 @@ def providers(provider_slug, param):
             unquote_plus(param))
         abort(NOT_FOUND)
 
+    # Build the full remote url by replacing param
     full_remote_url = provider.remote_url.format(param=param)
+
+    # Extract the base url from the full url
+    remote_host = utils.get_base_url(full_remote_url)
 
     # Get the content of the page
     # HACK: we force copy the accept-language from the recieved request
@@ -205,8 +209,9 @@ def providers(provider_slug, param):
     try:
         # Search for an answer in the page
         return utils.extract_node_from_html(
-            provider.result_selector,
-            page)
+            selector=provider.result_selector,
+            html=page,
+            base_url=remote_host)
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '

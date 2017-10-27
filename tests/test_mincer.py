@@ -41,6 +41,7 @@ from tests.utils import has_header_subtitle
 from tests.utils import all_links
 from tests.utils import has_table
 from tests.utils import all_table_column_headers
+from tests.utils import is_absolute_url
 
 # Test framework that helps you write better programs !
 import pytest
@@ -228,6 +229,22 @@ class TestGenericKohaBooklist(object):
 
         # We have an answer...
         assert response.status_code == NOT_FOUND
+
+    def test_links_are_fullpath(self, client):
+        # We are using the ID of of an existing list
+        LIST_ID = "9896"
+
+        url = self.build_url(LIST_ID)
+        response = client.get(url)
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        links = all_links(data)
+
+        assert len(links) > 0
+        for l in links:
+            assert is_absolute_url(l)
 
 
 def test_koha_search_is_a_provider(client):

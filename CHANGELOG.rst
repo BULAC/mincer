@@ -2,6 +2,11 @@
 CHANGELOG
 =========
 
+Branche develop
+===============
+
+*	Rendre les lien fullpath pour permettre de les ouvrir depuis les partials
+
 Version 1.1.0
 =============
 
@@ -23,7 +28,6 @@ Version 1.0.0
 TODO
 ====
 
-*	rendre les lien fullpath pour permettre de les ouvrir depuis les partials
 *	Gérer le cas où il y a une seule réponse à la recherche
 *	Gérer le cas où la réponse du serveur n'a pas la forme attendue
 *	Gérer le cas où le serveur ne répond pas

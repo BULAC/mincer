@@ -17,6 +17,10 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# To manipulate urls easily
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
+
 # To create decorator easily
 from functools import wraps
 
@@ -135,14 +139,19 @@ def extract_content_from_html(selector, expected_content, html):
     return "<div>{content}</div>".format(content=expected_content)
 
 
-def extract_node_from_html(selector, html):
+def extract_node_from_html(selector, html, base_url=''):
     """
     Extract one div from a html document according to a JQuery selector.
+
+    The link in the returned partials can be optionnaly made absolute to a
+    given base url.
 
     Arguments:
         selector (str): a JQuery selector query that define how we select the
             desired div in the document.
         html (str): a string containing an HTML document.
+        base_url (str): an absolute url. If not ``''`` all links are made absolute using this
+            url as base.
 
     Returns:
         str: the selected div. There could be only one top-level div in the
@@ -157,6 +166,10 @@ def extract_node_from_html(selector, html):
         >>> PAGE = '<!DOCTYPE html><html><div id="hop">hip</div></html>'
         >>> extract_node_from_html("#hop", PAGE)
         '<div id="hop">hip</div>'
+
+        >>> PAGE_LINK = '<!DOCTYPE html><html><div id="hop"><a href="relative.html">hip</a></div></html>'
+        >>> extract_node_from_html("#hop", PAGE_LINK, "http://host.org/good/path/")
+        '<div id="hop"><a href="http://host.org/good/path/relative.html">hip</a></div>'
     """
 
     raw_q = PyQuery(html)
@@ -172,7 +185,12 @@ def extract_node_from_html(selector, html):
         # ...then it's an error
         raise MultipleMatchError()
 
-    return filtered_q.outerHtml()
+    if not base_url:
+        return filtered_q.outerHtml()
+
+    return filtered_q\
+        .make_links_absolute(base_url)\
+        .outerHtml()
 
 
 # Snippet taken from http://flask.pocoo.org/snippets/100/
@@ -188,3 +206,24 @@ def add_response_headers(headers={}):
             return resp
         return decorated_function
     return decorator
+
+
+def get_base_url(url):
+    """Returns the base url of a given ``url``.
+
+    Given a generic url ``scheme://netloc/path;parameters?query#fragment`` this
+    function will return ``scheme://netloc``.
+
+    Params:
+        url (str): a valid fullpath url.
+
+    Returns:
+        str: the given ``url`` striped from everything after its netloc.
+
+    Examples:
+        >>> get_base_url("http://mybase.org/evil/dude/plan.html")
+        'http://mybase.org'
+    """
+    parsed = urlparse(url)
+
+    return urlunparse((parsed.scheme, parsed.netloc, '', '', '', ''))

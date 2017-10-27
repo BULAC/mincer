@@ -17,6 +17,9 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# To elegantly analyze urls
+from urllib.parse import urlparse
+
 # To analyse deeply HTML pages or partials
 from pyquery import PyQuery
 
@@ -265,3 +268,34 @@ def all_table_column_headers(page):
     selected = d("table thead th")
 
     return [e.text for e in selected if e.attrib.get("scope", "") == "col"]
+
+
+def is_absolute_url(url):
+    """Helper function that tells whether or not a given url is absolute.
+
+    Any url is in the form ``scheme://netloc/path;parameters?query#fragment``
+    and this function detects url where the ``netloc`` part is correctly
+    introduce by a ``//``. Otherwise the url is considered relative.
+
+    Params:
+        url (str): Url to analyze.
+
+    Returns:
+        bool: True if the link netloc is introduce by a valid ``//``. For more
+            details see `URL Parsinf documentation
+            <https://docs.python.org/3.5/library/urllib.parse.html#url-parsing>`_
+
+    Examples:
+        >>> is_absolute_url("http://myhost.com")
+        True
+
+        >>> is_absolute_url("http://myhost.com/anything.html")
+        True
+
+        >>> is_absolute_url("/myhost.com")
+        False
+
+        >>> is_absolute_url("/bip/bap/bop.html")
+        False
+    """
+    return urlparse(url).netloc != ''
