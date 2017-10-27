@@ -74,41 +74,6 @@ Pour sélectionner un ``div`` particulier dans la page de réponse d'un fourniss
 
 Ainsi il est possible de tester très facilement ses sélecteurs avant de les utiliser dans l'Adapter.
 
-Todo list
-=========
-
-DONE
-----
-
-*	Page web de status basique à l'adresse ``GET /status``
-*	Traitement des liste de lecture sur le serveur KOHA de la BULAC à l'adresse ``GET /koha/liste-de-lecture?param=123456789``
-*	Traitement des recherches de document sur le serveur KOHA de la BULAC à l'adresse ``GET /koha/recherche?param=afrique``
-*	Gérer le cas où il y a des réponses à la recherche
-*	Gérer le cas où il n'y a pas de réponse à la recherche
-
-TODO
-----
-
-*	rendre les lien fullpath pour permettre de les ouvrir depuis les partials
-*	Pouvoir fixer l'origine dans les requêtes retournées pour permettre l'intégration dans une page externe (par exemple une iframe)
-*	Gérer le cas où il y a une seule réponse à la recherche
-*	Gérer le cas où la réponse du serveur n'a pas la forme attendue
-*	Gérer le cas où le serveur ne répond pas
-*	Gérer le cas où le serveur est OFFLINE
-*	Afficher les différents cas d'erreur (via un affichage ok/problème) sur la page de status
-*	Gestion des fournisseur de données via un fichier de configuration
-*	Nettoyer (optionnellement) le HTML en supprimant les lignes vide et normalisant les indentations
-*	Décorer (optionnellement) les résultats avec un lien vers la recherche chez le fournisseur
-*	Décorer (optionnellement) les résultats avec le nombre de résultat
-*	Modification des fournisseurs de donnée via une API REST standard à l'adresse `http://monserveur.net/providers`
-*	Pages web de status détaillée pour chaque fournisseur de donnée à l'adresse ``GET /status/nom-du-fournisseur``
-*	Accès aux pages de status détaillées depuis la page de status principale (selon la case ou l'on clique dans le tableau cela nous envoie vers la bonne page idéalement directement au bon endroit)
-*	Login pour accéder à l'interface web
-*	Ajouter un test de charge de traitement d'une page web complexe
-*	Permettre le caching (pour 24h) des éléments de type liste de lecture qui évoluent peu (le cache peut être remis à zero depuis la page de configuration des fournisseurs)
-*	Générer la documentation avec `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ et `Napoleon <https://pypi.python.org/pypi/sphinxcontrib-napoleon>`_
-*	Intégrer la doc utilisateur directement dans la page de status/ajout via des liens contextuels
-
 Notes en vrac
 =============
 
