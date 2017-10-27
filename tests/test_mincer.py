@@ -36,6 +36,11 @@ except Exception as e:
 from tests.utils import is_div
 from tests.utils import is_html5_page
 from tests.utils import has_page_title
+from tests.utils import has_header_title
+from tests.utils import has_header_subtitle
+from tests.utils import all_links
+from tests.utils import has_table
+from tests.utils import all_table_column_headers
 
 # Test framework that helps you write better programs !
 import pytest
@@ -64,20 +69,18 @@ class TestMincer(object):
         assert is_html5_page(data)
 
         assert has_page_title(data, "Mincer Status report")
-        # TODO: Use has_header_h1() helper
-        assert "Mincer" in data  # Title
-        assert "Status report" in data  # Subtitle
+        assert has_header_title(data, "Mincer")
+        assert has_header_subtitle(data, "Status report")
 
-        # TODO: Use has_table() helper
-        assert "<table" in data
-        assert "Provider's name" in data
-        assert "Server online?" in data
-        assert "Server responding?" in data
-        assert "Correctly formed answer?" in data
+        assert has_table(data)
+        assert "Provider's name" in all_table_column_headers(data)
+        assert "Server online?" in all_table_column_headers(data)
+        assert "Server responding?" in all_table_column_headers(data)
+        assert "Correctly formed answer?" in all_table_column_headers(data)
 
-        # TODO: Use has_link() helper
-        assert 'href="/status/koha-search"' in data  # Link #1
-        assert 'href="/status/koha-booklist"' in data  # Link #2
+        # Test the presence of essencial links
+        assert "/status/koha-search" in all_links(data)
+        assert "/status/koha-booklist" in all_links(data)
 
 
 # TODO: Add test for inefficient search selector: no result
@@ -279,6 +282,10 @@ def test_koha_booklist_is_a_provider(client):
     # Test if we recieved a full HTML page
     assert is_html5_page(data)
 
+    assert has_page_title(data, "Koha booklist Status report")
+    assert has_header_title(data, "Koha booklist")
+    assert has_header_subtitle(data, "Status report")
+
     # Do we have the essential info in it
     # Provider name
     assert "koha booklist" in data
@@ -327,11 +334,11 @@ def test_home_page_give_links_to_all_providers(client):
     assert is_html5_page(data)
 
     assert has_page_title(data, "Mincer Home")
-    # TODO: Use has_header_h1() helper
-    assert "Mincer"  # Title
-    assert "Home"  # Subtitle
-    # TODO: Use with has_link() helper
-    assert 'href="/status/koha-search"' in data  # Link #1
-    assert 'href="/status/koha-booklist"' in data  # Link #2
+    assert has_header_title(data, "Mincer")
+    assert has_header_subtitle(data, "Home")
+
+    # Test the presence of essenciel links
+    assert "/status/koha-search" in all_links(data)
+    assert "/status/koha-booklist" in all_links(data)
 
 # TODO: add test for single ressource provider (koha for example)
