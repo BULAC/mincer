@@ -34,14 +34,20 @@ from enum import Enum
 # To decode form-encoded values
 from urllib.parse import unquote_plus
 
+# To manipulate path
+import os
+
+# To access SQLite database c.f. https://www.sqlite.org/
+import sqlite3
+
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
 
+# Flask application context all purpose variable
+from flask import g
+
 # For rendering Jinja2 HTML template as pages
 from flask import render_template
-
-# For building HTTP response and be able to modify them
-from flask import make_response
 
 # For easy redirecting to error page
 from flask import abort
@@ -69,6 +75,12 @@ from mincer import utils
 
 # The web application named after the main file itself
 app = Flask(__name__)
+
+# Config of the application
+# Default values
+app.config.update(DATABASE=os.path.join(app.instance_path, 'mincer.db'))
+# If we want to overload the setting with a config file
+app.config.from_envvar('MINCER_SETTINGS', silent=True)
 
 
 class HtmlClasses(str, Enum):
@@ -114,6 +126,39 @@ Provider(
     name="koha booklist",
     remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
     result_selector="#usershelves .searchresults")
+
+
+def connect_db():
+    """Connects to the specific database.
+
+    This is very useful for testing to have this function.
+
+    See `Flask tutorial - Application Setup Code
+    <http://flask.pocoo.org/docs/0.12/tutorial/setup/#tutorial-setup>`_
+    """
+    # Get a row view from the datatbase
+    rv = sqlite3.connect(app.config['DATABASE'])
+
+    # This allows the rows to be treated as if they were dictionaries
+    # instead of tuples
+    rv.row_factory = sqlite3.Row
+
+    return rv
+
+
+def get_db():
+    """Opens a new database connection if there is none yet for the
+    current application context.
+
+    This is very useful for testing to have this function.
+
+    See `Flask tutorial - Database Connections
+    <http://flask.pocoo.org/docs/0.12/tutorial/dbcon/#tutorial-dbcon>`_
+    """
+    if not hasattr(g, 'sqlite_db'):
+        g.sqlite_db = connect_db()
+
+    return g.sqlite_db
 
 
 @app.route("/")

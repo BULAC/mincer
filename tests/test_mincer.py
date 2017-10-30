@@ -22,6 +22,9 @@ __license__ = "GNU AGPL V3"
 # Module we are going to test
 import mincer
 
+# To manipulate path
+import os
+
 # To translate query from natural text to url encoded
 from urllib.parse import quote_plus
 
@@ -359,3 +362,17 @@ def test_home_page_give_links_to_all_providers(client):
     assert "/status/koha-booklist" in all_links(data)
 
 # TODO: add test for single ressource provider (koha for example)
+
+
+class TestDatabase(object):
+    def test_app_has_a_database_in_config(self):
+        assert "DATABASE" in mincer.app.config
+
+        EXPECTED_PATH = os.path.join(mincer.app.instance_path, "mincer.db")
+        assert mincer.app.config["DATABASE"] == EXPECTED_PATH
+
+    def test_app_can_connect_to_database(self):
+        assert mincer.connect_db() is not None
+
+    def test_app_can_get_actual_database(self):
+        assert mincer.get_db() is not None
