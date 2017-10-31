@@ -25,6 +25,9 @@ import mincer
 # To manipulate path
 import os
 
+# To create tmp files
+import pathlib
+
 # To translate query from natural text to url encoded
 from urllib.parse import quote_plus
 
@@ -371,8 +374,22 @@ class TestDatabase(object):
         EXPECTED_PATH = os.path.join(mincer.app.instance_path, "mincer.db")
         assert mincer.app.config["DATABASE"] == EXPECTED_PATH
 
-    def test_app_can_connect_to_database(self):
+    @pytest.fixture
+    def app_context(self, tmpdir):
+        tmp_db = tmpdir.join("test.db")
+        pathlib.Path(tmp_db).touch()
+        mincer.app.config["DATABASE"] = str(tmp_db)
+
+        with mincer.app.app_context():
+            yield
+
+    def test_can_initialize_database(self, app_context):
+        mincer.init_db()
+
+    def test_app_can_connect_to_database(self, app_context):
+        mincer.init_db()
         assert mincer.connect_db() is not None
 
-    def test_app_can_get_actual_database(self):
+    def test_app_can_get_actual_database(self, app_context):
+        mincer.init_db()
         assert mincer.get_db() is not None
