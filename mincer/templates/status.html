@@ -31,10 +31,10 @@
 		</tr>
 	</thead>
 	<tbody>
-	{% for slug, prov in providers|dictsort %}
+	{% for prov in providers %}
 		<tr>
 			<th scope="row">
-				<a href="{{ url_for('provider_status', provider_slug=slug) }}">
+				<a href="{{ url_for('provider_status', provider_slug=prov.slug) }}">
 					{{ prov.name|capitalize }}
 				</a>
 			</th>

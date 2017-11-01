@@ -32,3 +32,6 @@ prodrun:
 # Run the server in debug mode
 debugrun:
 	FLASK_APP=mincer/__init__.py FLASK_DEBUG=1 flask run
+
+initdb:
+	FLASK_APP=mincer/__init__.py flask initdb

@@ -42,6 +42,7 @@ from flask import Flask
 
 # For easy database ~ python binding c.f. http://www.sqlalchemy.org/
 from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy
 
 # Flask application context all purpose variable
 from flask import g
@@ -66,9 +67,9 @@ from slugify import slugify
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
-    from HTTPStatus import NOT_FOUND
+    from HTTPStatus import NOT_FOUND, INTERNAL_SERVER_ERROR
 except Exception as e:
-    from http.client import NOT_FOUND
+    from http.client import NOT_FOUND, INTERNAL_SERVER_ERROR
 
 # Html extraction tools
 from mincer import utils
@@ -77,9 +78,12 @@ from mincer import utils
 app = Flask(__name__)
 
 # Config of the application
+
 # Default values
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///{path}".format(
     path=os.path.join(app.instance_path, 'mincer.db'))
+
 # If we want to overload the setting with a config file
 app.config.from_envvar('MINCER_SETTINGS', silent=True)
 
@@ -96,30 +100,8 @@ class HtmlClasses(str, Enum):
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
 
-class Provider(object):
-    """A web data provider for Mincer.
 
-    It can be a search provider or a book list provider."""
-    ALL = {}
-
-    def __init__(
-            self,
-            name,
-            remote_url,
-            result_selector,
-            no_result_selector="",
-            no_result_content=""):
-        self.name = name
-        self.slug = slugify(name)
-        self.remote_url = remote_url
-        self.result_selector = result_selector
-        self.no_result_selector = no_result_selector
-        self.no_result_content = no_result_content
-
-        self.ALL[self.slug] = self
-
-
-class NewProvider(db.Model):
+class Provider(db.Model):
     """A web data provider for Mincer.
 
     It can be a search provider or a book list provider."""
@@ -137,20 +119,12 @@ class NewProvider(db.Model):
         # Add the slug param since it is built from name
         kwargs["slug"] = slugify(kwargs["name"])
 
-        super(User, self).__init__(**kwargs)
+        super(Provider, self).__init__(**kwargs)
 
 
-# TODO remove this abomination of global hidden variable!!!
-Provider(
-    name="koha search",
-    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
-    result_selector="#userresults .searchresults",
-    no_result_selector=".span12 p",
-    no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
-Provider(
-    name="koha booklist",
-    remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-    result_selector="#usershelves .searchresults")
+class DatabaseError(Exception):
+    """Raised if an non repairable error occured while dealing with database."""
+    pass
 
 
 def init_db():
@@ -161,9 +135,44 @@ def init_db():
     See `Flask-SQLAlchemy Tutorial - A Minimal Application
     <http://flask-sqlalchemy.pocoo.org/2.3/quickstart/#a-minimal-application>`_
     """
+    if not os.path.exists(app.instance_path):
+        raise DatabaseError(
+            "Impossible to create or access database."
+            "The instance path {path} used to store "
+            "the database does not exist.".format(path=app.instance_path)
+            )
+
     db.drop_all()
     db.create_all()
 
+
+@app.cli.command('initdb')
+def initdb_command():
+    """Initializes the database via command line.
+
+    See `Flask Tutorial - Creating The Database
+    <http://flask.pocoo.org/docs/0.12/tutorial/dbinit/>`_
+    """
+    try:
+        init_db()
+    except DatabaseError as e:
+        print(e)
+        print('*** Database NOT initialized!!!')
+    else:
+        print('*** Database initialized.')
+
+
+@app.errorhandler(sqlalchemy.exc.OperationalError)
+def handle_db_operational_error(err):
+    # Improve the error message with revelent advice
+    if "unable to open database file" in str(err):
+        msg = "{err} - check if you initialized the database using mincer.init_db() function.".format(err=err)
+    else:
+        msg = str(err)
+
+    app.logger.error(msg)
+
+    abort(INTERNAL_SERVER_ERROR, msg)
 
 @app.route("/")
 def home():
@@ -174,7 +183,7 @@ def home():
     """
     return render_template(
         "home.html",
-        providers=Provider.ALL,
+        providers=Provider.query.order_by(Provider.slug).all(),
         title="Mincer",
         subtitle="Home")
 
@@ -187,18 +196,19 @@ def status():
 
     .. :quickref: Status; Get status of all providers
     """
+    app.logger.info(Provider.query.order_by(Provider.slug).all())
     return render_template(
         "status.html",
-        providers=Provider.ALL,
+        providers=Provider.query.order_by(Provider.slug).all(),
         title="Mincer",
         subtitle="Status report")
 
 
 @app.route("/status/<string:provider_slug>")
 def provider_status(provider_slug):
-    try:
-        provider = Provider.ALL[provider_slug]
-    except KeyError:
+    # Retrieve the provider from database
+    provider = Provider.query.filter(Provider.slug == provider_slug).first()
+    if not provider:
         app.logger.error(
             'Provider %s was requested for status but this provider name '
             'does not exist.',
@@ -232,9 +242,9 @@ def providers(provider_slug, param):
 
     .. :quickref: Search; Retrieve search result list from KOHA
     """
-    try:
-        provider = Provider.ALL[provider_slug]
-    except Exception as e:
+    # Retrieve the provider from database
+    provider = Provider.query.filter(Provider.slug == provider_slug).first()
+    if not provider:
         app.logger.error(
             'Provider %s was asked for "%s" but this provider name '
             'does not exist.',

@@ -54,13 +54,63 @@ import pytest
 
 
 @pytest.fixture
+def tmp_db_uri(tmpdir):
+    # Store the old URI to restore it later
+    OLD_URI = mincer.app.config["SQLALCHEMY_DATABASE_URI"]
+
+    # Generate a temp file for the test database
+    TMP_DB = tmpdir.join("test.db")
+    pathlib.Path(TMP_DB).touch()
+    TMP_URI = "sqlite:///{path}".format(path=str(TMP_DB))
+
+    # Set the temp database
+    mincer.app.config["SQLALCHEMY_DATABASE_URI"] = TMP_URI
+
+    yield TMP_URI
+
+    # Some cleanup: when messing with the config, always give it back in its original state.
+    mincer.app.config["SQLALCHEMY_DATABASE_URI"] = OLD_URI
+
+
+@pytest.fixture
+def tmp_db(tmp_db_uri):
+    # Initialize the temp database
+    mincer.init_db()
+
+    return mincer.db
+
+
+@pytest.fixture
 def client():
     """Returns a test client for the mincer Flask app."""
     return mincer.app.test_client()
 
+@pytest.fixture
+def bulac_prov(tmp_db):
+    """Add BULAC specific providers to the database."""
+    # Create the providers
+    koha_search = mincer.Provider(
+        name="koha search",
+        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
+        result_selector="#userresults .searchresults",
+        no_result_selector=".span12 p",
+        no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
+    koha_booklist = mincer.Provider(
+        name="koha booklist",
+        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
+        result_selector="#usershelves .searchresults")
+
+    # Add them to the database
+    mincer.db.session.add_all([
+        koha_search,
+        koha_booklist])
+
+    # Commit the transaction
+    mincer.db.session.commit()
+
 
 class TestMincer(object):
-    def test_has_status_page(self, client):
+    def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
 
         # We have an answer...
@@ -101,7 +151,16 @@ class TestGenericKohaSearch(object):
 
         return url
 
-    def test_search_works(self, client):
+    def test_return_error_page_with_empty_query(self, client):
+        SEARCH_QUERY = ''
+
+        url = self.build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == NOT_FOUND
+
+    def test_search_works(self, client, tmp_db, bulac_prov):
         # This search returns only a few results
         SEARCH_QUERY = 'afrique voiture'
 
@@ -128,16 +187,7 @@ class TestGenericKohaSearch(object):
         assert "L'amour a le goût des fraises" in data
         assert "Les chemins de Mahjouba" in data
 
-    def test_return_error_page_with_empty_query(self, client):
-        SEARCH_QUERY = ''
-
-        url = self.build_url(SEARCH_QUERY)
-        response = client.get(url)
-
-        # We have an answer...
-        assert response.status_code == NOT_FOUND
-
-    def test_search_works_with_unicode_query(self, client):
+    def test_search_works_with_unicode_query(self, client, tmp_db, bulac_prov):
         # This search returns only a few results (in japanese)
         SEARCH_QUERY = '龍 車 日'  # dragon car day
 
@@ -163,7 +213,7 @@ class TestGenericKohaSearch(object):
         assert "新疆史志" in data
         assert "永井龍男集" in data
 
-    def test_return_a_no_result_partial_if_no_result_are_found(self, client):
+    def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, bulac_prov):
         # This search returns absolutly no result
         SEARCH_QUERY = 'zxkml'
 
@@ -196,7 +246,16 @@ class TestGenericKohaBooklist(object):
 
         return url
 
-    def test_return_result_partial_if_result_are_found(self, client):
+    def test_return_error_page_when_asking_for_empty_list_id(self, client):
+        LIST_ID = ''
+
+        url = self.build_url(LIST_ID)
+        response = client.get(url)
+
+        # We have an answer...
+        assert response.status_code == NOT_FOUND
+
+    def test_return_result_partial_if_result_are_found(self, client, tmp_db, bulac_prov):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
@@ -227,16 +286,7 @@ class TestGenericKohaBooklist(object):
         assert "Revue européenne des migrations internationales" in data
         assert "The Cold War in the Third World" in data
 
-    def test_return_error_page_when_asking_for_empty_list_id(self, client):
-        LIST_ID = ''
-
-        url = self.build_url(LIST_ID)
-        response = client.get(url)
-
-        # We have an answer...
-        assert response.status_code == NOT_FOUND
-
-    def test_links_are_fullpath(self, client):
+    def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
@@ -253,7 +303,7 @@ class TestGenericKohaBooklist(object):
             assert is_absolute_url(l)
 
 
-def test_koha_search_is_a_provider(client):
+def test_koha_search_is_a_provider(client, tmp_db, bulac_prov):
     URL = '/status/koha-search'
     response = client.get(URL)
 
@@ -289,7 +339,7 @@ def test_koha_search_is_a_provider(client):
     assert "Aucune réponse trouvée dans le catalogue BULAC." in data
 
 
-def test_koha_booklist_is_a_provider(client):
+def test_koha_booklist_is_a_provider(client, tmp_db, bulac_prov):
     URL = '/status/koha-booklist'
     response = client.get(URL)
 
@@ -323,7 +373,7 @@ def test_koha_booklist_is_a_provider(client):
     assert "#usershelves .searchresults" in data
 
 
-def test_return_not_found_for_inexistant_providers_status(client):
+def test_return_not_found_for_inexistant_providers_status(client, tmp_db, bulac_prov):
     URL = "/status/dummy"
 
     response = client.get(URL)
@@ -332,7 +382,7 @@ def test_return_not_found_for_inexistant_providers_status(client):
     assert response.status_code == NOT_FOUND
 
 
-def test_return_not_found_for_inexistant_providers_query(client):
+def test_return_not_found_for_inexistant_providers_query(client, tmp_db, bulac_prov):
     URL = "/providers/dummy/abcde"
 
     response = client.get(URL)
@@ -341,7 +391,7 @@ def test_return_not_found_for_inexistant_providers_query(client):
     assert response.status_code == NOT_FOUND
 
 
-def test_home_page_give_links_to_all_providers(client):
+def test_home_page_give_links_to_all_providers(client, tmp_db, bulac_prov):
     response = client.get('/')
 
     # We have an answer...
@@ -377,22 +427,11 @@ class TestDatabase(object):
 
         assert mincer.app.config["SQLALCHEMY_DATABASE_URI"] == EXPECTED_URI
 
-    @pytest.fixture
-    def app_context(self, tmpdir):
-        TMP_DB = tmpdir.join("test.db")
-        pathlib.Path(TMP_DB).touch()
-        TMP_URI = "sqlite:///{path}".format(path=str(TMP_DB))
-
-        mincer.app.config["SQLALCHEMY_DATABASE_URI"] = TMP_URI
-
-        with mincer.app.app_context():
-            yield
-
-    def test_can_initialize_database(self, app_context):
+    def test_can_initialize_database(self, tmp_db_uri):
         mincer.init_db()
 
         # Get the content of the database
-        assert len(mincer.NewProvider.query.all()) == 0
+        assert len(mincer.Provider.query.all()) == 0
 
-    def test_app_can_get_actual_database(self, app_context):
+    def test_app_can_get_actual_database(self, tmp_db):
         assert mincer.db is not None

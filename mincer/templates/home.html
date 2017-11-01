@@ -5,11 +5,11 @@
 <section>
 	<h1>Available providers <small>({{ providers|length }})</small></h1>
 
-	{% for slug, prov in providers|dictsort %}
+	{% for prov in providers %}
 	<a
 		class="btn btn-primary btn-lg btn-block"
 		role="button"
-		href="{{ url_for('provider_status', provider_slug=slug) }}">
+		href="{{ url_for('provider_status', provider_slug=prov.slug) }}">
 		{{ prov.name|capitalize }}
 	</a>
 	{% endfor %}
