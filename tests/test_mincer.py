@@ -109,7 +109,30 @@ def bulac_prov(tmp_db):
     mincer.db.session.commit()
 
 
-class TestMincer(object):
+class TestWebInterface(object):
+    def test_home_page_give_links_to_all_providers(self, client, tmp_db, bulac_prov):
+        response = client.get('/')
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Mincer Home")
+        assert has_header_title(data, "Mincer")
+        assert has_header_subtitle(data, "Home")
+
+        # Test the presence of essenciel links
+        assert "/status/koha-search" in all_links(data)
+        assert "/status/koha-booklist" in all_links(data)
+
     def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
 
@@ -139,10 +162,18 @@ class TestMincer(object):
         assert "/status/koha-search" in all_links(data)
         assert "/status/koha-booklist" in all_links(data)
 
+    def test_return_not_found_for_inexistant_providers_status(self, client, tmp_db, bulac_prov):
+        URL = "/status/dummy"
+
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == NOT_FOUND
+
 
 # TODO: Add test for inefficient search selector: no result
 class TestGenericKohaSearch(object):
-    def build_url(self, param):
+    def _build_url(self, param):
         BASE_URL = '/providers/koha-search/'
 
         url = '{url}{param}'.format(
@@ -151,10 +182,45 @@ class TestGenericKohaSearch(object):
 
         return url
 
-    def test_return_error_page_with_empty_query(self, client):
+    def test_koha_search_is_a_provider(self, client, tmp_db, bulac_prov):
+        URL = '/status/koha-search'
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        # Do we have the essential info in it
+        # Provider name
+        assert "koha search" in data
+
+        # Slugified name
+        assert "koha-search" in data
+
+        # Query url (we don't check for the full one)
+        assert "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl" in data
+
+        # Result list selector
+        assert "#userresults .searchresults" in data
+
+        # No result selector
+        assert ".span12 p" in data
+
+        # No result content
+        assert "Aucune réponse trouvée dans le catalogue BULAC." in data
+
+    def test_return_error_page_with_empty_query(self, client, tmp_db, bulac_prov):
         SEARCH_QUERY = ''
 
-        url = self.build_url(SEARCH_QUERY)
+        url = self._build_url(SEARCH_QUERY)
         response = client.get(url)
 
         # We have an answer...
@@ -164,7 +230,7 @@ class TestGenericKohaSearch(object):
         # This search returns only a few results
         SEARCH_QUERY = 'afrique voiture'
 
-        url = self.build_url(SEARCH_QUERY)
+        url = self._build_url(SEARCH_QUERY)
         response = client.get(url)
 
         # We have an answer...
@@ -191,7 +257,7 @@ class TestGenericKohaSearch(object):
         # This search returns only a few results (in japanese)
         SEARCH_QUERY = '龍 車 日'  # dragon car day
 
-        url = self.build_url(SEARCH_QUERY)
+        url = self._build_url(SEARCH_QUERY)
         response = client.get(url)
 
         # We have an answer...
@@ -217,7 +283,7 @@ class TestGenericKohaSearch(object):
         # This search returns absolutly no result
         SEARCH_QUERY = 'zxkml'
 
-        url = self.build_url(SEARCH_QUERY)
+        url = self._build_url(SEARCH_QUERY)
         response = client.get(url)
 
         # We have an answer...
@@ -235,9 +301,25 @@ class TestGenericKohaSearch(object):
         # ...containing only a <div>
         assert is_div(data, cls_name="no-result")
 
+    def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
+        # This search returns only a few results
+        SEARCH_QUERY = 'afrique voiture'
+
+        url = self._build_url(SEARCH_QUERY)
+        response = client.get(url)
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        links = all_links(data)
+
+        assert len(links) > 0
+        for l in links:
+            assert is_absolute_url(l)
+
 
 class TestGenericKohaBooklist(object):
-    def build_url(self, param):
+    def _build_url(self, param):
         BASE_URL = '/providers/koha-booklist/'
 
         url = '{url}{param}'.format(
@@ -246,10 +328,43 @@ class TestGenericKohaBooklist(object):
 
         return url
 
+    def test_koha_booklist_is_a_provider(self, client, tmp_db, bulac_prov):
+        URL = '/status/koha-booklist'
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Koha booklist Status report")
+        assert has_header_title(data, "Koha booklist")
+        assert has_header_subtitle(data, "Status report")
+
+        # Do we have the essential info in it
+        # Provider name
+        assert "koha booklist" in data
+
+        # Slugified name
+        assert "koha-booklist" in data
+
+        # Query url (we don't check for the full one)
+        assert "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl" in data
+
+        # Result list selector
+        assert "#usershelves .searchresults" in data
+
     def test_return_error_page_when_asking_for_empty_list_id(self, client):
         LIST_ID = ''
 
-        url = self.build_url(LIST_ID)
+        url = self._build_url(LIST_ID)
         response = client.get(url)
 
         # We have an answer...
@@ -259,7 +374,7 @@ class TestGenericKohaBooklist(object):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
-        url = self.build_url(LIST_ID)
+        url = self._build_url(LIST_ID)
         response = client.get(url)
 
         # We have an answer...
@@ -290,7 +405,7 @@ class TestGenericKohaBooklist(object):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
-        url = self.build_url(LIST_ID)
+        url = self._build_url(LIST_ID)
         response = client.get(url)
 
         # Let's convert it for easy inspection
@@ -303,85 +418,6 @@ class TestGenericKohaBooklist(object):
             assert is_absolute_url(l)
 
 
-def test_koha_search_is_a_provider(client, tmp_db, bulac_prov):
-    URL = '/status/koha-search'
-    response = client.get(URL)
-
-    # We have an answer...
-    assert response.status_code == OK
-
-    # ...it's an HTML document...
-    assert response.mimetype == "text/html"
-
-    # Let's convert it for easy inspection
-    data = response.get_data(as_text=True)
-
-    # Test if we recieved a full HTML page
-    assert is_html5_page(data)
-
-    # Do we have the essential info in it
-    # Provider name
-    assert "koha search" in data
-
-    # Slugified name
-    assert "koha-search" in data
-
-    # Query url (we don't check for the full one)
-    assert "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl" in data
-
-    # Result list selector
-    assert "#userresults .searchresults" in data
-
-    # No result selector
-    assert ".span12 p" in data
-
-    # No result content
-    assert "Aucune réponse trouvée dans le catalogue BULAC." in data
-
-
-def test_koha_booklist_is_a_provider(client, tmp_db, bulac_prov):
-    URL = '/status/koha-booklist'
-    response = client.get(URL)
-
-    # We have an answer...
-    assert response.status_code == OK
-
-    # ...it's an HTML document...
-    assert response.mimetype == "text/html"
-
-    # Let's convert it for easy inspection
-    data = response.get_data(as_text=True)
-
-    # Test if we recieved a full HTML page
-    assert is_html5_page(data)
-
-    assert has_page_title(data, "Koha booklist Status report")
-    assert has_header_title(data, "Koha booklist")
-    assert has_header_subtitle(data, "Status report")
-
-    # Do we have the essential info in it
-    # Provider name
-    assert "koha booklist" in data
-
-    # Slugified name
-    assert "koha-booklist" in data
-
-    # Query url (we don't check for the full one)
-    assert "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl" in data
-
-    # Result list selector
-    assert "#usershelves .searchresults" in data
-
-
-def test_return_not_found_for_inexistant_providers_status(client, tmp_db, bulac_prov):
-    URL = "/status/dummy"
-
-    response = client.get(URL)
-
-    # We have an answer...
-    assert response.status_code == NOT_FOUND
-
-
 def test_return_not_found_for_inexistant_providers_query(client, tmp_db, bulac_prov):
     URL = "/providers/dummy/abcde"
 
@@ -389,30 +425,6 @@ def test_return_not_found_for_inexistant_providers_query(client, tmp_db, bulac_p
 
     # We have an answer...
     assert response.status_code == NOT_FOUND
-
-
-def test_home_page_give_links_to_all_providers(client, tmp_db, bulac_prov):
-    response = client.get('/')
-
-    # We have an answer...
-    assert response.status_code == OK
-
-    # ...it's an HTML document...
-    assert response.mimetype == "text/html"
-
-    # Let's convert it for easy inspection
-    data = response.get_data(as_text=True)
-
-    # Test if we recieved a full HTML page
-    assert is_html5_page(data)
-
-    assert has_page_title(data, "Mincer Home")
-    assert has_header_title(data, "Mincer")
-    assert has_header_subtitle(data, "Home")
-
-    # Test the presence of essenciel links
-    assert "/status/koha-search" in all_links(data)
-    assert "/status/koha-booklist" in all_links(data)
 
 # TODO: add test for single ressource provider (koha for example)
 
