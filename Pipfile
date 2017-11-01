@@ -9,12 +9,13 @@ name = "pypi"
 
 pytest = "*"
 sphinxcontrib-httpdomain = "*"
-Sphinx = "==1.5.6"
+sphinx = "==1.5.6"
 
 
 [packages]
 
-Flask = "*"
+flask = "*"
 pyquery = "*"
 requests = "*"
 python-slugify = "*"
+flask-sqlalchemy = "*"

@@ -37,11 +37,11 @@ from urllib.parse import unquote_plus
 # To manipulate path
 import os
 
-# To access SQLite database c.f. https://www.sqlite.org/
-import sqlite3
-
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
+
+# For easy database ~ python binding c.f. http://www.sqlalchemy.org/
+from flask_sqlalchemy import SQLAlchemy
 
 # Flask application context all purpose variable
 from flask import g
@@ -78,9 +78,13 @@ app = Flask(__name__)
 
 # Config of the application
 # Default values
-app.config.update(DATABASE=os.path.join(app.instance_path, 'mincer.db'))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///{path}".format(
+    path=os.path.join(app.instance_path, 'mincer.db'))
 # If we want to overload the setting with a config file
 app.config.from_envvar('MINCER_SETTINGS', silent=True)
+
+# Add the database support to our application
+db = SQLAlchemy(app)
 
 
 class HtmlClasses(str, Enum):
@@ -91,7 +95,7 @@ class HtmlClasses(str, Enum):
 
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
-# Poor man database...
+
 class Provider(object):
     """A web data provider for Mincer.
 
@@ -115,6 +119,27 @@ class Provider(object):
         self.ALL[self.slug] = self
 
 
+class NewProvider(db.Model):
+    """A web data provider for Mincer.
+
+    It can be a search provider or a book list provider."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
+    slug = db.Column(db.String, unique=True, nullable=False)
+    remote_url = db.Column(db.String, unique=False, nullable=False)
+    result_selector = db.Column(db.String, unique=False, nullable=False)
+    no_result_selector = db.Column(db.String, unique=False, nullable=True)
+    no_result_content = db.Column(db.String, unique=False, nullable=True)
+
+    def __init__(self, **kwargs):
+        assert "slug" not in kwargs, "slug is auto-computed and must not be provided"
+
+        # Add the slug param since it is built from name
+        kwargs["slug"] = slugify(kwargs["name"])
+
+        super(User, self).__init__(**kwargs)
+
+
 # TODO remove this abomination of global hidden variable!!!
 Provider(
     name="koha search",
@@ -128,51 +153,16 @@ Provider(
     result_selector="#usershelves .searchresults")
 
 
-def connect_db():
-    """Connects to the specific database.
-
-    This is very useful for testing to have this function.
-
-    See `Flask tutorial - Application Setup Code
-    <http://flask.pocoo.org/docs/0.12/tutorial/setup/#tutorial-setup>`_
-    """
-    # Get a row view from the datatbase
-    rv = sqlite3.connect(app.config['DATABASE'])
-
-    # This allows the rows to be treated as if they were dictionaries
-    # instead of tuples
-    rv.row_factory = sqlite3.Row
-
-    return rv
-
-
-def get_db():
-    """Opens a new database connection if there is none yet for the
-    current application context.
-
-    This is very useful for testing to have this function.
-
-    See `Flask tutorial - Database Connections
-    <http://flask.pocoo.org/docs/0.12/tutorial/dbcon/#tutorial-dbcon>`_
-    """
-    if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = connect_db()
-
-    return g.sqlite_db
-
-
 def init_db():
-    """Initialize the database with the SQL schema.
+    """Remove everything from database and then nitialize it with the SQL schema.
 
-    This is very useful for testing to have this function.
+    This function must be called at least once before using the database in any way.
 
-    See `Flask tutorial - Database Connections
-    <http://flask.pocoo.org/docs/0.12/tutorial/dbinit/#tutorial-dbinit>`_
+    See `Flask-SQLAlchemy Tutorial - A Minimal Application
+    <http://flask-sqlalchemy.pocoo.org/2.3/quickstart/#a-minimal-application>`_
     """
-    db = get_db()
-    with app.open_resource('schema.sql', mode='r') as f:
-        db.cursor().executescript(f.read())
-    db.commit()
+    db.drop_all()
+    db.create_all()
 
 
 @app.route("/")

@@ -369,16 +369,21 @@ def test_home_page_give_links_to_all_providers(client):
 
 class TestDatabase(object):
     def test_app_has_a_database_in_config(self):
-        assert "DATABASE" in mincer.app.config
+        assert "SQLALCHEMY_DATABASE_URI" in mincer.app.config
 
-        EXPECTED_PATH = os.path.join(mincer.app.instance_path, "mincer.db")
-        assert mincer.app.config["DATABASE"] == EXPECTED_PATH
+        # Let's build the expected path
+        DB_PATH = os.path.join(mincer.app.instance_path, "mincer.db")
+        EXPECTED_URI = "sqlite:///{path}".format(path=DB_PATH)
+
+        assert mincer.app.config["SQLALCHEMY_DATABASE_URI"] == EXPECTED_URI
 
     @pytest.fixture
     def app_context(self, tmpdir):
-        tmp_db = tmpdir.join("test.db")
-        pathlib.Path(tmp_db).touch()
-        mincer.app.config["DATABASE"] = str(tmp_db)
+        TMP_DB = tmpdir.join("test.db")
+        pathlib.Path(TMP_DB).touch()
+        TMP_URI = "sqlite:///{path}".format(path=str(TMP_DB))
+
+        mincer.app.config["SQLALCHEMY_DATABASE_URI"] = TMP_URI
 
         with mincer.app.app_context():
             yield
@@ -387,17 +392,7 @@ class TestDatabase(object):
         mincer.init_db()
 
         # Get the content of the database
-        db = mincer.get_db()
-        cur = db.execute('select title, text from entries order by id desc')
-        entries = cur.fetchall()
-
-        # Check for emptyness
-        assert len(entries) == 0
-
-    def test_app_can_connect_to_database(self, app_context):
-        mincer.init_db()
-        assert mincer.connect_db() is not None
+        assert len(mincer.NewProvider.query.all()) == 0
 
     def test_app_can_get_actual_database(self, app_context):
-        mincer.init_db()
-        assert mincer.get_db() is not None
+        assert mincer.db is not None
