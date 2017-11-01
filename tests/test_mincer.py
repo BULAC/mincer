@@ -386,6 +386,14 @@ class TestDatabase(object):
     def test_can_initialize_database(self, app_context):
         mincer.init_db()
 
+        # Get the content of the database
+        db = mincer.get_db()
+        cur = db.execute('select title, text from entries order by id desc')
+        entries = cur.fetchall()
+
+        # Check for emptyness
+        assert len(entries) == 0
+
     def test_app_can_connect_to_database(self, app_context):
         mincer.init_db()
         assert mincer.connect_db() is not None
