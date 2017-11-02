@@ -5,7 +5,13 @@ CHANGELOG
 Branche develop
 ===============
 
+Version 1.2.0
+=============
+
 *	Rendre les lien fullpath pour permettre de les ouvrir depuis les partials
+*	Gestion des fournisseur de données via une base de donnée
+*	Configuration de l'application compatible avec un déploiement en environnement de production (via flask.app.config)
+*	Rationnalisation de l'architecture des tests
 
 Version 1.1.0
 =============
@@ -28,15 +34,14 @@ Version 1.0.0
 TODO
 ====
 
+*	Modification des fournisseurs de donnée via une API REST standard à l'adresse `http://monserveur.net/providers`
 *	Gérer le cas où il y a une seule réponse à la recherche
 *	Gérer le cas où la réponse du serveur n'a pas la forme attendue
 *	Gérer le cas où le serveur ne répond pas
 *	Gérer le cas où le serveur est OFFLINE
-*	Gestion des fournisseur de données via une base de donnée
 *	Nettoyer (optionnellement) le HTML en supprimant les lignes vide et normalisant les indentations
 *	Décorer (optionnellement) les résultats avec un lien vers la recherche chez le fournisseur
 *	Décorer (optionnellement) les résultats avec le nombre de résultat
-*	Modification des fournisseurs de donnée via une API REST standard à l'adresse `http://monserveur.net/providers`
 *	Login pour accéder à l'interface web
 *	Ajouter un test de charge de traitement d'une page web complexe
 *	Permettre le caching (pour 24h) des éléments de type liste de lecture qui évoluent peu (le cache peut être remis à zero depuis la page de configuration des fournisseurs)
