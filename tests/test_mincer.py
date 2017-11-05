@@ -31,6 +31,9 @@ import pathlib
 # To translate query from natural text to url encoded
 from urllib.parse import quote_plus
 
+# To start and stop fake server
+from subprocess import Popen
+
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
@@ -48,6 +51,9 @@ from tests.utils import all_links
 from tests.utils import has_table
 from tests.utils import all_table_column_headers
 from tests.utils import is_absolute_url
+
+# Fake provider simulator
+from tests import fakeprov
 
 # Test framework that helps you write better programs !
 import pytest
@@ -447,3 +453,49 @@ class TestDatabase(object):
 
     def test_app_can_get_actual_database(self, tmp_db):
         assert mincer.db is not None
+
+
+@pytest.fixture
+def fake_prov():
+    HOST = "0.0.0.0"
+    PORT = 5555
+
+    server = Popen("../tests/fakeprov.py")
+    # TODO: add the provider to mincer DB
+
+    yield "http://{host}:{port}".format(host=HOST, port=PORT), server
+
+    server.terminate()
+
+
+def _build_url_from_query(base_url, query):
+    url = '{url}//{query}'.format(
+        url=base_url,
+        query=quote_plus(query))
+
+    return url
+
+
+def test_canary_search_work(client, tmp_db, fake_prov):
+        URL = _build_url_from_query(fake_prov, 'canary')
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name="searchresults")
+
+        # And we have the correct books in it
+        assert "result 1" in data
+        assert "result 2" in data
+        assert "result 3" in data
