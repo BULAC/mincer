@@ -255,19 +255,47 @@ def all_table_column_headers(page):
             `scope="col"` in the page.
 
     Examples:
-        >>> all_table_column_headers('<thml><body><table><thead><tr><th scope="col">toto</th><th scope="col">titi</th></tr></thead></table></body></html>')
+        >>> all_table_column_headers('<html><body><table><thead><tr><th scope="col">toto</th><th scope="col">titi</th></tr></thead></table></body></html>')
         ['toto', 'titi']
 
-        >>> all_table_column_headers('<thml><body><table><thead><tr><th>toto</th><th>titi</th></tr></thead></table></body></html>')
+        >>> all_table_column_headers('<html><body><table><thead><tr><th>toto</th><th>titi</th></tr></thead></table></body></html>')
         []
 
-        >>> all_table_column_headers('<thml><body><table><tbody><tr><th>rowtoto</th><th>rowtiti</th></tr></tbody></table></body></html>')
+        >>> all_table_column_headers('<html><body><table><tbody><tr><th>rowtoto</th><th>rowtiti</th></tr></tbody></table></body></html>')
         []
     """
     d = PyQuery(page)
     selected = d("table thead th")
 
     return [e.text for e in selected if e.attrib.get("scope", "") == "col"]
+
+
+def all_form_groups(page):
+    """Helper function that returns all div .form-group as a dict.
+
+    Params:
+        page (str): an HTML page to analyse.
+
+    Returns:
+        dict of str to str: Dict mapping label text to input value.
+
+    Examples:
+        >>> all_form_groups('<html><body><form><div class="form-group"><label>lablab</label><input value="toto"></div></form></body></html>')
+        {'lablab': 'toto'}
+
+        >>> all_form_groups('<html><body><form><div class="form-group"><label>lablab</label><input value=""></div></form></body></html>')
+        {'lablab': ''}
+    """
+    d = PyQuery(page)
+    selected = d("form .form-group")
+
+    res = {}
+    for grp in selected.items():
+        label = grp("label").text()
+        input_val = grp("input").val()
+        res[label] = input_val
+
+    return res
 
 
 def is_absolute_url(url):

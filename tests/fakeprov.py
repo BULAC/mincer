@@ -10,6 +10,8 @@ try:
 except Exception as e:
     from http.client import OK, BAD_REQUEST
 
+from urllib.parse import unquote_plus
+
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
 
@@ -19,8 +21,16 @@ app = Flask(__name__)
 
 @app.route("/fake/<string:query>")
 def serve_any_query(query):
-    if query == "canary":
+    clean_query = unquote_plus(query)
+
+    if clean_query == "canary":
         return '<div class="result">Pew Pew</div>', OK
+    elif clean_query == "search with multiple results":
+        return '<div class="result">'\
+            '<div>Result number 1</div>'\
+            '<div>Result number 2</div>'\
+            '<div>Result number 3</div>'\
+            '</div>', OK
 
     return BAD_REQUEST
 

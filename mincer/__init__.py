@@ -91,11 +91,14 @@ app.config.from_envvar('MINCER_SETTINGS', silent=True)
 db = SQLAlchemy(app)
 
 
-class HtmlClasses(str, Enum):
+class HtmlClasses(object):
     """HTML classes used when generating returned HTML contents."""
 
     """Class used to embed returned content when we have no results."""
     NO_RESULT = "no-result"
+
+    """Class used to embed returned content when we have some results."""
+    RESULT = "some-results"
 
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
@@ -110,8 +113,8 @@ class Provider(db.Model):
     slug = db.Column(db.String, unique=True, nullable=False)
     remote_url = db.Column(db.String, unique=False, nullable=False)
     result_selector = db.Column(db.String, unique=False, nullable=False)
-    no_result_selector = db.Column(db.String, unique=False, nullable=True)
-    no_result_content = db.Column(db.String, unique=False, nullable=True)
+    no_result_selector = db.Column(db.String, unique=False, nullable=False, default="")
+    no_result_content = db.Column(db.String, unique=False, nullable=False, default="")
 
     def __init__(self, **kwargs):
         assert "slug" not in kwargs, "slug is auto-computed and must not be provided"
@@ -267,10 +270,13 @@ def providers(provider_slug, param):
 
     try:
         # Search for an answer in the page
-        return utils.extract_node_from_html(
+        answer_div = utils.extract_node_from_html(
             selector=provider.result_selector,
             html=page,
             base_url=remote_host)
+        return PyQuery(answer_div)\
+            .add_class(HtmlClasses.RESULT)\
+            .outer_html()
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
@@ -294,8 +300,10 @@ def providers(provider_slug, param):
         # TODO: test this behavior
         app.logger.error(
             'Provider %s was asked for "%s" but neither result structure nor '
-            'a no result message could be found in it\'s result page.',
+            'a no result message could be found in it\'s result page. The '
+            'remote url used was <%s>.',
             provider_slug,
-            unquote_plus(param))
+            unquote_plus(param),
+            full_remote_url)
         # TODO: replace this with a valide answer
         abort(BAD_REQUEST)

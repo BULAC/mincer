@@ -54,9 +54,7 @@ from tests.utils import all_links
 from tests.utils import has_table
 from tests.utils import all_table_column_headers
 from tests.utils import is_absolute_url
-
-# Fake provider simulator
-from tests import fakeprov
+from tests.utils import all_form_groups
 
 # Test framework that helps you write better programs !
 import pytest
@@ -93,6 +91,7 @@ def tmp_db(tmp_db_uri):
 def client():
     """Returns a test client for the mincer Flask app."""
     return mincer.app.test_client()
+
 
 @pytest.fixture
 def bulac_prov(tmp_db):
@@ -207,24 +206,19 @@ class TestGenericKohaSearch(object):
         # Test if we recieved a full HTML page
         assert is_html5_page(data)
 
+        assert has_page_title(data, "Koha search Status report")
+        assert has_header_title(data, "Koha search")
+        assert has_header_subtitle(data, "Status report")
+
         # Do we have the essential info in it
-        # Provider name
-        assert "koha search" in data
+        form_groups = all_form_groups(data)
 
-        # Slugified name
-        assert "koha-search" in data
-
-        # Query url (we don't check for the full one)
-        assert "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl" in data
-
-        # Result list selector
-        assert "#userresults .searchresults" in data
-
-        # No result selector
-        assert ".span12 p" in data
-
-        # No result content
-        assert "Aucune réponse trouvée dans le catalogue BULAC." in data
+        assert form_groups["Name"] == "koha search"
+        assert form_groups["Slug"] == "koha-search"
+        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
+        assert form_groups["Result selector"] == "#userresults .searchresults"
+        assert form_groups["No result selector"] == ".span12 p"
+        assert form_groups["No result content"] == "Aucune réponse trouvée dans le catalogue BULAC."
 
     def test_return_error_page_with_empty_query(self, client, tmp_db, bulac_prov):
         SEARCH_QUERY = ''
@@ -255,7 +249,7 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
+        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
         assert "Transafrique" in data
@@ -282,7 +276,7 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
+        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
         assert "新疆史志" in data
@@ -308,7 +302,7 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name="no-result")
+        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)
 
     def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
         # This search returns only a few results
@@ -358,17 +352,14 @@ class TestGenericKohaBooklist(object):
         assert has_header_subtitle(data, "Status report")
 
         # Do we have the essential info in it
-        # Provider name
-        assert "koha booklist" in data
+        form_groups = all_form_groups(data)
 
-        # Slugified name
-        assert "koha-booklist" in data
-
-        # Query url (we don't check for the full one)
-        assert "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl" in data
-
-        # Result list selector
-        assert "#usershelves .searchresults" in data
+        assert form_groups["Name"] == "koha booklist"
+        assert form_groups["Slug"] == "koha-booklist"
+        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
+        assert form_groups["Result selector"] == "#usershelves .searchresults"
+        assert form_groups["No result selector"] == ""
+        assert form_groups["No result content"] == ""
 
     def test_return_error_page_when_asking_for_empty_list_id(self, client):
         LIST_ID = ''
@@ -399,7 +390,7 @@ class TestGenericKohaBooklist(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
+        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
         assert "Africa in Russia, Russia in Africa" in data
@@ -478,7 +469,7 @@ class TestWithFakeProvider(object):
     def fake_prov(self):
         # Create the providers
         fake_provider = mincer.Provider(
-            name="fake",
+            name="fake server",
             remote_url="http://0.0.0.0:5555/fake/{param}",
             result_selector=".result",
             no_result_selector=".noresult",
@@ -491,7 +482,7 @@ class TestWithFakeProvider(object):
         mincer.db.session.commit()
 
     def _build_url_from_query(self, query):
-        BASE_URL = '/providers/fake/'
+        BASE_URL = '/providers/fake-server/'
 
         url = '{url}{query}'.format(
             url=BASE_URL,
@@ -499,15 +490,82 @@ class TestWithFakeProvider(object):
 
         return url
 
-    def test_fake_canary_search_work(self, client, tmp_db, fake_serv, fake_prov):
-            URL = self._build_url_from_query('canary')  #
-            response = client.get(URL)
+    # This is just to test that the fake server works
+    def test_canary(self, client, tmp_db, fake_serv, fake_prov):
+        URL = self._build_url_from_query('canary')
+        response = client.get(URL)
 
-            # We have an answer...
-            assert response.status_code == OK
+        # We have an answer...
+        assert response.status_code == OK
 
-            # Let's convert it for easy inspection
-            data = response.get_data(as_text=True)
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
 
-            # And we have the correct books in it
-            assert "Pew Pew" in data
+        # And we have the correct books in it
+        assert "Pew Pew" in data
+
+    def test_provider_has_status_page(self, client, tmp_db, fake_serv, fake_prov):
+        URL = '/status/fake-server'
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        # Do we have the essential info in it
+        # Provider name
+        assert has_page_title(data, "Fake server Status report")
+        assert has_header_title(data, "Fake server")
+        assert has_header_subtitle(data, "Status report")
+
+        # TODO: use specialized function to analyse the page
+        form_groups = all_form_groups(data)
+
+        assert form_groups["Name"] == "fake server"
+        assert form_groups["Slug"] == "fake-server"
+        assert form_groups["Remote address"] == "http://0.0.0.0:5555/fake/{param}"
+        assert form_groups["Result selector"] == ".result"
+        assert form_groups["No result selector"] == ".noresult"
+        assert form_groups["No result content"] == "no result"
+
+    # TODO: change this behavior to have a valid response partial
+    def test_return_404_error_if_no_query_provided(self, client, tmp_db, fake_serv, fake_prov):
+        QUERY = ''
+        URL = self._build_url_from_query(QUERY)
+        response = client.get(URL)
+
+        # We have a NOT FOUND answer
+        assert response.status_code == NOT_FOUND
+
+    def test_return_result_partial_if_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
+        QUERY = "search with multiple results"
+        URL = self._build_url_from_query(QUERY)
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
+        # ...it's an HTML document
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+
+        # And we have the correct books in it
+        assert "Result number 1" in data
+        assert "Result number 2" in data
+        assert "Result number 3" in data
