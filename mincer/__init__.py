@@ -67,9 +67,9 @@ from slugify import slugify
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
-    from HTTPStatus import NOT_FOUND, INTERNAL_SERVER_ERROR
+    from HTTPStatus import NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
 except Exception as e:
-    from http.client import NOT_FOUND, INTERNAL_SERVER_ERROR
+    from http.client import NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
 
 # Html extraction tools
 from mincer import utils
@@ -281,11 +281,21 @@ def providers(provider_slug, param):
 
     # TODO: test test the case where this fails for exemple if we have
     #   a "loading page"
-    # Search for a no answer message in the page
-    no_answer_div = utils.extract_content_from_html(
-        provider.no_result_selector,
-        provider.no_result_content,
-        page)
-    return PyQuery(no_answer_div)\
-        .add_class(HtmlClasses.NO_RESULT)\
-        .outer_html()
+    try:
+        # Search for a no answer message in the page
+        no_answer_div = utils.extract_content_from_html(
+            provider.no_result_selector,
+            provider.no_result_content,
+            page)
+        return PyQuery(no_answer_div)\
+            .add_class(HtmlClasses.NO_RESULT)\
+            .outer_html()
+    except utils.NoMatchError:
+        # TODO: test this behavior
+        app.logger.error(
+            'Provider %s was asked for "%s" but neither result structure nor '
+            'a no result message could be found in it\'s result page.',
+            provider_slug,
+            unquote_plus(param))
+        # TODO: replace this with a valide answer
+        abort(BAD_REQUEST)

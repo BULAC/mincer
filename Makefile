@@ -21,6 +21,11 @@ test:
 	# Moving to the mincer module dir allows doctests to run properly
 	cd mincer; pipenv run py.test --doctest-modules ..
 
+# Launch only the last failed test
+testlast:
+	# Moving to the mincer module dir allows doctests to run properly
+	cd mincer; pipenv run py.test --doctest-modules --lf ..
+
 # Generate the doc
 doc:
 	cd docs; make html

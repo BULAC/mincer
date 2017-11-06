@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Dummy server used to test Mincer on all usecase.
+"""
 
 # Convenient constant for HTTP status codes
 try:
@@ -11,20 +14,16 @@ except Exception as e:
 from flask import Flask
 
 # The web application named after the main file itself
-# TODO: use a factory instead
 app = Flask(__name__)
 
 
-# TODO: put this in the generic route /fake/<param>
-@app.route("/canary")
-# @app.route("/<string:param>")
-def canary():
-    return "Pew Pew", OK
+@app.route("/fake/<string:query>")
+def serve_any_query(query):
+    if query == "canary":
+        return '<div class="result">Pew Pew</div>', OK
 
-# @app.route("/fake/<string:query>")
-# def serve_any_query(query):
-#     if query == 
-#     return 
+    return BAD_REQUEST
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5555)

@@ -28,6 +28,9 @@ import os
 # To create tmp files
 import pathlib
 
+# To wait a little bit for thing to settle...
+from time import sleep
+
 # To translate query from natural text to url encoded
 from urllib.parse import quote_plus
 
@@ -455,47 +458,56 @@ class TestDatabase(object):
         assert mincer.db is not None
 
 
-@pytest.fixture
-def fake_prov():
-    HOST = "0.0.0.0"
-    PORT = 5555
+class TestWithFakeProvider(object):
+    @pytest.fixture(scope='class')
+    def fake_serv(self):
+        # Set the path of the server (depends of how the tests are launched)
+        path = "tests/fakeprov.py"
+        if not os.path.exists(path):
+            path = os.path.join("..", path)
 
-    server = Popen("../tests/fakeprov.py")
-    # TODO: add the provider to mincer DB
+        fake_server = Popen(path)
+        # Wait for the process to start
+        sleep(1)
 
-    yield "http://{host}:{port}".format(host=HOST, port=PORT), server
+        yield fake_server
 
-    server.terminate()
+        fake_server.terminate()
 
+    @pytest.fixture
+    def fake_prov(self):
+        # Create the providers
+        fake_provider = mincer.Provider(
+            name="fake",
+            remote_url="http://0.0.0.0:5555/fake/{param}",
+            result_selector=".result",
+            no_result_selector=".noresult",
+            no_result_content="no result")
 
-def _build_url_from_query(base_url, query):
-    url = '{url}//{query}'.format(
-        url=base_url,
-        query=quote_plus(query))
+        # Add them to the database
+        mincer.db.session.add(fake_provider)
 
-    return url
+        # Commit the transaction
+        mincer.db.session.commit()
 
+    def _build_url_from_query(self, query):
+        BASE_URL = '/providers/fake/'
 
-def test_canary_search_work(client, tmp_db, fake_prov):
-        URL = _build_url_from_query(fake_prov, 'canary')
-        response = client.get(URL)
+        url = '{url}{query}'.format(
+            url=BASE_URL,
+            query=quote_plus(query))
 
-        # We have an answer...
-        assert response.status_code == OK
+        return url
 
-        # Any web page can use this content
-        assert response.headers["Access-Control-Allow-Origin"] == "*"
+    def test_fake_canary_search_work(self, client, tmp_db, fake_serv, fake_prov):
+            URL = self._build_url_from_query('canary')  #
+            response = client.get(URL)
 
-        # ...it's an HTML document...
-        assert response.mimetype == "text/html"
+            # We have an answer...
+            assert response.status_code == OK
 
-        # Let's convert it for easy inspection
-        data = response.get_data(as_text=True)
+            # Let's convert it for easy inspection
+            data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name="searchresults")
-
-        # And we have the correct books in it
-        assert "result 1" in data
-        assert "result 2" in data
-        assert "result 3" in data
+            # And we have the correct books in it
+            assert "Pew Pew" in data
