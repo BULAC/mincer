@@ -417,15 +417,6 @@ class TestGenericKohaBooklist(object):
         for l in links:
             assert is_absolute_url(l)
 
-
-def test_return_not_found_for_inexistant_providers_query(client, tmp_db, bulac_prov):
-    URL = "/providers/dummy/abcde"
-
-    response = client.get(URL)
-
-    # We have an answer...
-    assert response.status_code == NOT_FOUND
-
 # TODO: add test for single ressource provider (koha for example)
 
 
@@ -504,8 +495,15 @@ class TestWithFakeProvider(object):
         # And we have the correct books in it
         assert "Pew Pew" in data
 
-    def test_provider_has_status_page(
-            self, client, tmp_db, fake_serv, fake_prov):
+    def test_return_not_found_for_inexistant_providers_query(self, client, tmp_db, fake_serv, fake_prov):
+        URL = "/providers/dummy/abcde"
+
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == NOT_FOUND
+
+    def test_provider_has_status_page(self, client, tmp_db, fake_serv, fake_prov):
         URL = '/status/fake-server'
         response = client.get(URL)
 
@@ -538,8 +536,7 @@ class TestWithFakeProvider(object):
         assert form_groups["No result content"] == "no result"
 
     # TODO: change this behavior to have a valid response partial
-    def test_return_404_error_if_no_query_provided(
-            self, client, tmp_db, fake_serv, fake_prov):
+    def test_return_404_error_if_no_query_provided(self, client, tmp_db, fake_serv, fake_prov):
         QUERY = ''
         URL = self._build_url_from_query(QUERY)
         response = client.get(URL)
@@ -547,8 +544,7 @@ class TestWithFakeProvider(object):
         # We have a NOT FOUND answer
         assert response.status_code == NOT_FOUND
 
-    def test_returned_links_are_fullpath(
-            self, client, tmp_db, fake_serv, fake_prov):
+    def test_returned_links_are_fullpath(self, client, tmp_db, fake_serv, fake_prov):
         # We are using the ID of of an existing list
         QUERY = "search with links"
         URL = self._build_url_from_query(QUERY)
@@ -569,8 +565,7 @@ class TestWithFakeProvider(object):
         for l in links:
             assert is_absolute_url(l)
 
-    def test_return_result_partial_if_result_are_found(
-            self, client, tmp_db, fake_serv, fake_prov):
+    def test_return_result_partial_if_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
         QUERY = "search with multiple results"
         URL = self._build_url_from_query(QUERY)
         response = client.get(URL)
@@ -594,3 +589,48 @@ class TestWithFakeProvider(object):
         assert "Result number 1" in data
         assert "Result number 2" in data
         assert "Result number 3" in data
+
+    def test_search_works_with_unicode_query(self, client, tmp_db, fake_serv, fake_prov):
+        # A query with some japanese
+        QUERY = "search with unicode 龍 車 日"  # dragon car day
+        URL = self._build_url_from_query(QUERY)
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+
+        # And we have the correct books in it
+        assert "Result with japanese 新疆史志" in data
+        assert "Result with japanese 永井龍男集" in data
+
+    def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
+        QUERY = "search without result"
+        URL = self._build_url_from_query(QUERY)
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Any web page can use this content
+        assert response.headers["Access-Control-Allow-Origin"] == "*"
+
+        # ...it's an HTML document...
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # ...containing only a <div>
+        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)

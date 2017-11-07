@@ -38,6 +38,15 @@ def serve_any_query(query):
             '<div><a href="/some/dir/">3rd link</a></div>'\
             '<div><a href="some/direct/link">4th link</a></div>'\
             '</div>', OK
+    elif clean_query == "search with unicode 龍 車 日":
+        return '<div class="result">'\
+            '<div>Result with japanese 新疆史志</div>'\
+            '<div>Result with japanese 永井龍男集</div>'\
+            '</div>', OK
+    elif clean_query == "search without result":
+        return '<div class="noresult">'\
+            'no result'\
+            '</div>', OK
 
     return BAD_REQUEST
 
