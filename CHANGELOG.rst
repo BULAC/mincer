@@ -5,6 +5,11 @@ CHANGELOG
 Branche develop
 ===============
 
+Version 1.3.0
+=============
+
+*	Possibilité de tester le programme sans aucune dépendance aux serveur BULAC (test accéléré de 95% !!!)
+
 Version 1.2.0
 =============
 
