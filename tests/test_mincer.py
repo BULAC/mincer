@@ -22,7 +22,7 @@ __license__ = "GNU AGPL V3"
 # Module we are going to test
 import mincer
 
-# To manipulate path
+# To manipulate path and environmet variable
 import os
 
 # To create tmp files
@@ -58,6 +58,10 @@ from tests.utils import all_form_groups
 
 # Test framework that helps you write better programs !
 import pytest
+
+bulac_test_only = pytest.mark.skipif(
+    "BULAC_TESTS" not in os.environ,
+    reason="only if we want BULAC specific tests to run")
 
 
 @pytest.fixture
@@ -180,6 +184,7 @@ class TestWebInterface(object):
 
 
 # TODO: Add test for inefficient search selector: no result
+@bulac_test_only
 class TestGenericKohaSearch(object):
     def _build_url(self, param):
         BASE_URL = '/providers/koha-search/'
@@ -321,6 +326,7 @@ class TestGenericKohaSearch(object):
             assert is_absolute_url(l)
 
 
+@bulac_test_only
 class TestGenericKohaBooklist(object):
     def _build_url(self, param):
         BASE_URL = '/providers/koha-booklist/'
@@ -450,7 +456,7 @@ class TestWithFakeProvider(object):
 
         fake_server = Popen(path)
         # Wait for the process to start
-        sleep(1)
+        sleep(2)
 
         yield fake_server
 

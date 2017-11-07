@@ -16,10 +16,15 @@ initdev:
 # 	python3 -m pip install pipenv --upgrade --user
 # 	pipenv install --three --skip-lock
 
-# Launch all tests
+# Launch all inexpensive tests
 test:
 	# Moving to the mincer module dir allows doctests to run properly
 	cd mincer; pipenv run py.test --doctest-modules ..
+
+# Launch all tests even the one depending on BULAC servers
+alltest:
+	# Moving to the mincer module dir allows doctests to run properly
+	cd mincer; BULAC_TESTS=1 pipenv run py.test --doctest-modules ..
 
 # Launch only the last failed test
 testlast:
