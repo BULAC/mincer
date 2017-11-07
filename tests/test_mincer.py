@@ -504,7 +504,8 @@ class TestWithFakeProvider(object):
         # And we have the correct books in it
         assert "Pew Pew" in data
 
-    def test_provider_has_status_page(self, client, tmp_db, fake_serv, fake_prov):
+    def test_provider_has_status_page(
+            self, client, tmp_db, fake_serv, fake_prov):
         URL = '/status/fake-server'
         response = client.get(URL)
 
@@ -537,7 +538,8 @@ class TestWithFakeProvider(object):
         assert form_groups["No result content"] == "no result"
 
     # TODO: change this behavior to have a valid response partial
-    def test_return_404_error_if_no_query_provided(self, client, tmp_db, fake_serv, fake_prov):
+    def test_return_404_error_if_no_query_provided(
+            self, client, tmp_db, fake_serv, fake_prov):
         QUERY = ''
         URL = self._build_url_from_query(QUERY)
         response = client.get(URL)
@@ -545,7 +547,30 @@ class TestWithFakeProvider(object):
         # We have a NOT FOUND answer
         assert response.status_code == NOT_FOUND
 
-    def test_return_result_partial_if_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
+    def test_returned_links_are_fullpath(
+            self, client, tmp_db, fake_serv, fake_prov):
+        # We are using the ID of of an existing list
+        QUERY = "search with links"
+        URL = self._build_url_from_query(QUERY)
+        response = client.get(URL)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML document
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        links = all_links(data)
+
+        assert len(links) > 0
+        for l in links:
+            assert is_absolute_url(l)
+
+    def test_return_result_partial_if_result_are_found(
+            self, client, tmp_db, fake_serv, fake_prov):
         QUERY = "search with multiple results"
         URL = self._build_url_from_query(QUERY)
         response = client.get(URL)

@@ -31,6 +31,13 @@ def serve_any_query(query):
             '<div>Result number 2</div>'\
             '<div>Result number 3</div>'\
             '</div>', OK
+    elif clean_query == "search with links":
+        return '<div class="result">'\
+            '<div><a href="/some/doc.html">1st link</a></div>'\
+            '<div><a href="/some/place">2nd link</a></div>'\
+            '<div><a href="/some/dir/">3rd link</a></div>'\
+            '<div><a href="some/direct/link">4th link</a></div>'\
+            '</div>', OK
 
     return BAD_REQUEST
 
