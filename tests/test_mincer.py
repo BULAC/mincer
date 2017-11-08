@@ -71,8 +71,8 @@ def tmp_db_uri(tmpdir):
 
     # Generate a temp file for the test database
     TMP_DB = tmpdir.join("test.db")
-    pathlib.Path(TMP_DB).touch()
-    TMP_URI = "sqlite:///{path}".format(path=str(TMP_DB))
+    pathlib.Path(TMP_DB.strpath).touch()
+    TMP_URI = "sqlite:///{path}".format(path=TMP_DB.strpath)
 
     # Set the temp database
     mincer.app.config["SQLALCHEMY_DATABASE_URI"] = TMP_URI
@@ -100,25 +100,7 @@ def client():
 @pytest.fixture
 def bulac_prov(tmp_db):
     """Add BULAC specific providers to the database."""
-    # Create the providers
-    koha_search = mincer.Provider(
-        name="koha search",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
-        result_selector="#userresults .searchresults",
-        no_result_selector=".span12 p",
-        no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
-    koha_booklist = mincer.Provider(
-        name="koha booklist",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-        result_selector="#usershelves .searchresults")
-
-    # Add them to the database
-    mincer.db.session.add_all([
-        koha_search,
-        koha_booklist])
-
-    # Commit the transaction
-    mincer.db.session.commit()
+    return mincer.load_sample_db()
 
 
 class TestWebInterface(object):

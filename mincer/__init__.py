@@ -149,6 +149,36 @@ def init_db():
     db.create_all()
 
 
+def load_sample_db():
+    """Load some basic providers to the database for test purpose.
+
+    This function needs :function:`init_db` to be called first.
+    """
+    # Create the providers
+    koha_search = Provider(
+        name="koha search",
+        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
+        result_selector="#userresults .searchresults",
+        no_result_selector=".span12 p",
+        no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
+    koha_booklist = Provider(
+        name="koha booklist",
+        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
+        result_selector="#usershelves .searchresults")
+
+    providers = [
+        koha_search,
+        koha_booklist]
+
+    # Add them to the database
+    db.session.add_all(providers)
+
+    # Commit the transaction
+    db.session.commit()
+
+    return providers
+
+
 @app.cli.command('initdb')
 def initdb_command():
     """Initializes the database via command line.
@@ -163,6 +193,19 @@ def initdb_command():
         print('*** Database NOT initialized!!!')
     else:
         print('*** Database initialized.')
+
+
+@app.cli.command('loadsampledb')
+def loadsampledb_command():
+    """Load some basic providers to the database via command line."""
+    try:
+        load_sample_db()
+    except DatabaseError as e:
+        print(e)
+        print('*** Sample providers NOT loaded!!!')
+        print('    > Did you initialize the database first?')
+    else:
+        print('*** Sample providers loaded.')
 
 
 @app.errorhandler(sqlalchemy.exc.OperationalError)
