@@ -11,10 +11,12 @@
 	<body>
 		<main role="main" class="container">
 		  <header>
-	  		<img
-					src={{ url_for('static', filename="mincer_logo_200px.png") }}
-					alt="Mincer logo"
-				>
+		  	<a href="{{ url_for('home') }}">
+		  		<img
+						src={{ url_for('static', filename="mincer_logo_200px.png") }}
+						alt="Mincer logo"
+					>
+		  	</a>
 				<h1 class="display-4 d-inline">
 					{{ title|capitalize }}
 					<small class="text-muted">{{ subtitle|capitalize }}</small>
