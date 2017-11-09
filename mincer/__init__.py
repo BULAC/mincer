@@ -242,7 +242,6 @@ def status():
 
     .. :quickref: Status; Get status of all providers
     """
-    app.logger.info(Provider.query.order_by(Provider.slug).all())
     return render_template(
         "status.html",
         providers=Provider.query.order_by(Provider.slug).all(),
