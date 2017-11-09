@@ -1,0 +1,237 @@
+{% extends "default_page.html" %}
+
+{% block content %}
+	<form>
+		<h2>JQuery</h2>
+
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="jquery-js"
+						class="form-label"
+					>
+						JQuery minified javascript
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">JS</div>
+						<input
+							id="jquery-js"
+							class="form-control"
+							type="text"
+							aria-describedby="jquery-js-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="jquery-js-help"
+						class="form-text text-muted"
+					>
+						Link to the <a href="https://code.jquery.com/">JQuery</a> javascript in slim minified version.
+					</small>
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="jquery-js-sha"
+						class="form-label"
+					>
+						JQuery minified javascript SHA
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">SHA</div>
+						<input
+							id="jquery-js-sha"
+							class="form-control"
+							type="text"
+							aria-describedby="jquery-js-sha-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="jquery-js-sha-help"
+						class="form-text text-muted"
+					>
+						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
+					</small>
+				</div>
+			</div>
+		</div>
+
+		<h2>Popper.js</h2>
+
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="popper-js"
+						class="form-label"
+					>
+						Popper.js minified javascript
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">JS</div>
+						<input
+							id="popper-js"
+							class="form-control"
+							type="text"
+							aria-describedby="popper-js-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="popper-js-help"
+						class="form-text text-muted"
+					>
+						Link to the <a href="https://github.com/FezVrasta/popper.js#installation">Popper.js</a> javascript in slim minified version.
+					</small>
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="popper-js-sha"
+						class="form-label"
+					>
+						Popper.js minified javascript SHA
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">SHA</div>
+						<input
+							id="popper-js-sha"
+							class="form-control"
+							type="text"
+							aria-describedby="popper-js-sha-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="popper-js-sha-help"
+						class="form-text text-muted"
+					>
+						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
+					</small>
+				</div>
+			</div>
+		</div>
+
+		<h2>Bootstrap</h2>
+
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="bootstrap-js"
+						class="form-label"
+					>
+						Bootstrap minified javascript
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">JS</div>
+						<input
+							id="bootstrap-js"
+							class="form-control"
+							type="text"
+							aria-describedby="bootstrap-js-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="bootstrap-js-help"
+						class="form-text text-muted"
+					>
+						Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> javascript in slim minified version.
+					</small>
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="bootstrap-js-sha"
+						class="form-label"
+					>
+						Bootstrap minified javascript SHA
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">SHA</div>
+						<input
+							id="bootstrap-js-sha"
+							class="form-control"
+							type="text"
+							aria-describedby="bootstrap-js-sha-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="bootstrap-js-sha-help"
+						class="form-text text-muted"
+					>
+						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
+					</small>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="bootstrap-css"
+						class="form-label"
+					>
+						Bootstrap minified CSS
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">CSS</div>
+						<input
+							id="bootstrap-css"
+							class="form-control"
+							type="text"
+							aria-describedby="bootstrap-css-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="bootstrap-css-help"
+						class="form-text text-muted"
+					>
+						Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> CSS in slim minified version.
+					</small>
+				</div>
+			</div>
+
+			<div class="col">
+				<div class="form-group">
+					<label
+						for="bootstrap-css-sha"
+						class="form-label"
+					>
+						Bootstrap minified CSS SHA
+					</label>
+					<div class="input-group">
+						<div class="input-group-addon">SHA</div>
+						<input
+							id="bootstrap-css-sha"
+							class="form-control"
+							type="text"
+							aria-describedby="bootstrap-css-sha-help"
+							value="{{ None }}"
+						>
+					</div>
+					<small
+						id="bootstrap-css-sha-help"
+						class="form-text text-muted"
+					>
+						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
+					</small>
+				</div>
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Submit</button>
+	</form>
+{% endblock %}

@@ -244,6 +244,62 @@ def has_table(page):
     return d("table") != []
 
 
+def has_form(page):
+    """Helper function to detect if a page contains at least one form element.
+
+    Params:
+        page (str): an HTML page to analyse.
+
+    Returns:
+        bool: True if the page contains at least one `<form>` element,
+            False if not.
+
+    Examples:
+        >>> has_form("<html><body><form></form></body></html>")
+        True
+
+        >>> has_form("<html><body><form></form><form></form></body></html>")
+        True
+
+        >>> has_form("<html><body></body></html>")
+        False
+    """
+    d = PyQuery(page)
+
+    return d("form") != []
+
+
+def has_form_submit_button(page):
+    """Helper function to detect if a page contains at least one form submit
+    button.
+
+    Params:
+        page (str): an HTML page to analyse.
+
+    Returns:
+        bool: True if the page contains at least one `<button type="submit">`
+            element in a `<form>` element, False if not.
+
+    Examples:
+        >>> has_form_submit_button('<html><body><form><button type="submit">Click me</button></form></body></html>')
+        True
+
+        >>> has_form_submit_button('<html><body><button type="submit">Click me</button></body></html>')
+        False
+
+        >>> has_form_submit_button('<html><body><form><button>Click me</button></form></body></html>')
+        False
+    """
+    d = PyQuery(page)
+
+    buttons = d("form button")
+
+    submit_buttons = [
+        e for e in buttons if e.attrib.get("type", "") == "submit"]
+
+    return submit_buttons != []
+
+
 def all_table_column_headers(page):
     """Helper function that returns all table column headers.
 

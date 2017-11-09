@@ -5,6 +5,9 @@ CHANGELOG
 Branche develop
 ===============
 
+*	Meilleure modèle de page avec un lien vers la page d'accueil dans le logo
+*	Avoir une page d'administration pour pouvoir mettre à jour les dépendance JS et CSS sans modifier le code (sans effet pour le moment)
+
 Version 1.2.0
 =============
 

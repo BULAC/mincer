@@ -234,7 +234,6 @@ def home():
         subtitle="Home")
 
 
-# TODO improve the status page with at least the logo
 @app.route("/status")
 def status():
     """
@@ -247,6 +246,19 @@ def status():
         providers=Provider.query.order_by(Provider.slug).all(),
         title="Mincer",
         subtitle="Status report")
+
+
+@app.route("/admin")
+def admin():
+    """
+    Provide an admin page to easily update the JS and CSS dependancy.
+
+    .. :quickref: Admin; Configure the application
+    """
+    return render_template(
+        "admin.html",
+        title="Mincer",
+        subtitle="Administration")
 
 
 @app.route("/status/<string:provider_slug>")

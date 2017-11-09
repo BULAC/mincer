@@ -54,7 +54,9 @@ from tests.utils import all_links
 from tests.utils import has_table
 from tests.utils import all_table_column_headers
 from tests.utils import is_absolute_url
+from tests.utils import has_form
 from tests.utils import all_form_groups
+from tests.utils import has_form_submit_button
 
 # Test framework that helps you write better programs !
 import pytest
@@ -104,7 +106,8 @@ def bulac_prov(tmp_db):
 
 
 class TestWebInterface(object):
-    def test_home_page_give_links_to_all_providers(self, client, tmp_db, bulac_prov):
+    # TODO: remove the static providers since we now have dynamic providers
+    def test_has_home_page(self, client, tmp_db, bulac_prov):
         response = client.get('/')
 
         # We have an answer...
@@ -123,9 +126,18 @@ class TestWebInterface(object):
         assert has_header_title(data, "Mincer")
         assert has_header_subtitle(data, "Home")
 
+        links = all_links(data)
+
+        # TODO: make this dynamic
         # Test the presence of essenciel links
-        assert "/status/koha-search" in all_links(data)
-        assert "/status/koha-booklist" in all_links(data)
+        assert "/status/koha-search" in links
+        assert "/status/koha-booklist" in links
+
+        # TODO: use url_for()
+        # Do we have admin links ?
+        assert "/status" in links
+        assert "/admin" in links
+
 
     def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
@@ -155,6 +167,57 @@ class TestWebInterface(object):
         # Test the presence of essencial links
         assert "/status/koha-search" in all_links(data)
         assert "/status/koha-booklist" in all_links(data)
+
+    def test_has_admin_page(self, client, tmp_db):
+        response = client.get('/admin')
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML page
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Mincer Administration")
+        assert has_header_title(data, "Mincer")
+        assert has_header_subtitle(data, "Administration")
+
+        assert has_form(data)
+
+        # Do we have the essential info in it
+        form_groups = all_form_groups(data)
+
+        # Do we have all the fields needed ?
+        assert "JQuery minified javascript" in form_groups
+        assert "JQuery minified javascript SHA" in form_groups
+
+        assert "Popper.js minified javascript" in form_groups
+        assert "Popper.js minified javascript SHA" in form_groups
+
+        assert "Bootstrap minified javascript" in form_groups
+        assert "Bootstrap minified javascript SHA" in form_groups
+
+        assert "Bootstrap minified CSS" in form_groups
+        assert "Bootstrap minified CSS SHA" in form_groups
+
+        # Do we have a button to validate the form ?
+        assert has_form_submit_button(data)
+
+        # Do we have the good links to all ressources ?
+        links = all_links(data)
+        # Places to get the ressources
+        assert "https://code.jquery.com/" in links
+        assert "https://github.com/FezVrasta/popper.js#installation" in links
+        assert "https://www.bootstrapcdn.com/" in links
+        # Hash generator to ensure the ressources are correct using SRI
+        assert "https://www.srihash.org/" in links
+        # Doc about SRI
+        assert "https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/" in links
 
     def test_return_not_found_for_inexistant_providers_status(self, client, tmp_db, bulac_prov):
         URL = "/status/dummy"
@@ -196,6 +259,8 @@ class TestGenericKohaSearch(object):
         assert has_page_title(data, "Koha search Status report")
         assert has_header_title(data, "Koha search")
         assert has_header_subtitle(data, "Status report")
+
+        assert has_form(data)
 
         # Do we have the essential info in it
         form_groups = all_form_groups(data)
@@ -338,6 +403,8 @@ class TestGenericKohaBooklist(object):
         assert has_page_title(data, "Koha booklist Status report")
         assert has_header_title(data, "Koha booklist")
         assert has_header_subtitle(data, "Status report")
+
+        assert has_form(data)
 
         # Do we have the essential info in it
         form_groups = all_form_groups(data)
@@ -513,7 +580,8 @@ class TestWithFakeProvider(object):
         assert has_header_title(data, "Fake server")
         assert has_header_subtitle(data, "Status report")
 
-        # TODO: use specialized function to analyse the page
+        assert has_form(data)
+
         form_groups = all_form_groups(data)
 
         assert form_groups["Name"] == "fake server"
