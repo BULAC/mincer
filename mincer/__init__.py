@@ -125,6 +125,18 @@ class Provider(db.Model):
         super(Provider, self).__init__(**kwargs)
 
 
+class Dependency(db.Model):
+    """A javascript or CSS dependency of Mincer app.
+
+    We put this information in the database in order to easily update it
+    without altering the code.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
+    url = db.Column(db.String, unique=False, nullable=False)
+    sha = db.Column(db.String, unique=False, nullable=False)
+
+
 class DatabaseError(Exception):
     """Raised if an non repairable error occured while dealing with database."""
     pass
@@ -145,8 +157,38 @@ def init_db():
             "the database does not exist.".format(path=app.instance_path)
             )
 
+    # TODO: create a backup of the database
+
+    # First clean the meta data
     db.drop_all()
     db.create_all()
+
+    # Then clean the data
+    Provider.query.delete()
+    Dependency.query.delete()
+    db.session.commit()
+
+    # Give valid defaults for dependencies
+    jquery = Dependency(
+        name="jquery-js",
+        url="https://code.jquery.com/jquery-3.2.1.slim.min.js",
+        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
+    popper = Dependency(
+        name="popper-js",
+        url="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js",
+        sha="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh")
+    bootstrapjs = Dependency(
+        name="bootstrap-js",
+        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js",
+        sha="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ")
+    bootstrapcss = Dependency(
+        name="bootstrap-css",
+        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
+        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
+
+    dependencies = [jquery, popper, bootstrapjs, bootstrapcss]
+    db.session.add_all(dependencies)
+    db.session.commit()
 
 
 def load_sample_db():
@@ -211,7 +253,8 @@ def loadsampledb_command():
 @app.errorhandler(sqlalchemy.exc.OperationalError)
 def handle_db_operational_error(err):
     # Improve the error message with revelent advice
-    if "unable to open database file" in str(err):
+    if "unable to open database file" in str(err)\
+            or "no such table" in str(err):
         msg = "{err} - check if you initialized the database using mincer.init_db() function.".format(err=err)
     else:
         msg = str(err)
@@ -219,6 +262,7 @@ def handle_db_operational_error(err):
     app.logger.error(msg)
 
     abort(INTERNAL_SERVER_ERROR, msg)
+
 
 @app.route("/")
 def home():
@@ -229,6 +273,7 @@ def home():
     """
     return render_template(
         "home.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
         providers=Provider.query.order_by(Provider.slug).all(),
         title="Mincer",
         subtitle="Home")
@@ -243,6 +288,7 @@ def status():
     """
     return render_template(
         "status.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
         providers=Provider.query.order_by(Provider.slug).all(),
         title="Mincer",
         subtitle="Status report")
@@ -251,14 +297,15 @@ def status():
 @app.route("/admin")
 def admin():
     """
-    Provide an admin page to easily update the JS and CSS dependancy.
+    Provide an admin page to easily update the JS and CSS dependency.
 
     .. :quickref: Admin; Configure the application
     """
     return render_template(
         "admin.html",
         title="Mincer",
-        subtitle="Administration")
+        subtitle="Administration",
+        dependencies={e.name: e for e in Dependency.query.all()})
 
 
 @app.route("/status/<string:provider_slug>")
@@ -274,6 +321,7 @@ def provider_status(provider_slug):
 
     return render_template(
         "provider_status.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
         provider=provider,
         title=provider.name,
         subtitle="Status report")

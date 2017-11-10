@@ -19,9 +19,6 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
-# Module we are going to test
-import mincer
-
 # To manipulate path and environmet variable
 import os
 
@@ -43,6 +40,10 @@ try:
     from HTTPStatus import OK, NOT_FOUND
 except Exception as e:
     from http.client import OK, NOT_FOUND
+
+# Module we are going to test
+import mincer
+from mincer import Provider, Dependency
 
 # Helpers to analyse HTML contents
 from tests.utils import is_div
@@ -66,7 +67,7 @@ bulac_test_only = pytest.mark.skipif(
     reason="only if we want BULAC specific tests to run")
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def tmp_db_uri(tmpdir):
     # Store the old URI to restore it later
     OLD_URI = mincer.app.config["SQLALCHEMY_DATABASE_URI"]
@@ -85,7 +86,7 @@ def tmp_db_uri(tmpdir):
     mincer.app.config["SQLALCHEMY_DATABASE_URI"] = OLD_URI
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def tmp_db(tmp_db_uri):
     # Initialize the temp database
     mincer.init_db()
@@ -137,7 +138,6 @@ class TestWebInterface(object):
         # Do we have admin links ?
         assert "/status" in links
         assert "/admin" in links
-
 
     def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
@@ -192,18 +192,27 @@ class TestWebInterface(object):
         # Do we have the essential info in it
         form_groups = all_form_groups(data)
 
-        # Do we have all the fields needed ?
-        assert "JQuery minified javascript" in form_groups
-        assert "JQuery minified javascript SHA" in form_groups
+        # Do we have all the fields needed with the correct initial values ?
+        dependencies = {e.name: e for e in Dependency.query.all()}
+        assert form_groups["JQuery minified javascript"]\
+            == dependencies["jquery-js"].url
+        assert form_groups["JQuery minified javascript SHA"]\
+            == dependencies["jquery-js"].sha
 
-        assert "Popper.js minified javascript" in form_groups
-        assert "Popper.js minified javascript SHA" in form_groups
+        assert form_groups["Popper.js minified javascript"]\
+            == dependencies["popper-js"].url
+        assert form_groups["Popper.js minified javascript SHA"]\
+            == dependencies["popper-js"].sha
 
-        assert "Bootstrap minified javascript" in form_groups
-        assert "Bootstrap minified javascript SHA" in form_groups
+        assert form_groups["Bootstrap minified javascript"]\
+            == dependencies["bootstrap-js"].url
+        assert form_groups["Bootstrap minified javascript SHA"]\
+            == dependencies["bootstrap-js"].sha
 
-        assert "Bootstrap minified CSS" in form_groups
-        assert "Bootstrap minified CSS SHA" in form_groups
+        assert form_groups["Bootstrap minified CSS"]\
+            == dependencies["bootstrap-css"].url
+        assert form_groups["Bootstrap minified CSS SHA"]\
+            == dependencies["bootstrap-css"].sha
 
         # Do we have a button to validate the form ?
         assert has_form_submit_button(data)
@@ -488,11 +497,28 @@ class TestDatabase(object):
     def test_can_initialize_database(self, tmp_db_uri):
         mincer.init_db()
 
-        # Get the content of the database
-        assert len(mincer.Provider.query.all()) == 0
+        # Check the global content of the database
+        assert len(Provider.query.all()) == 0
+        assert len(Dependency.query.all()) > 0
+
+        # Do we have default dependency ?
+        assert Dependency.query\
+            .filter(Dependency.name == "jquery-js").one()
+        assert Dependency.query\
+            .filter(Dependency.name == "popper-js").one()
+        assert Dependency.query\
+            .filter(Dependency.name == "bootstrap-js").one()
+        assert Dependency.query\
+            .filter(Dependency.name == "bootstrap-css").one()
 
     def test_app_can_get_actual_database(self, tmp_db):
         assert mincer.db is not None
+
+    def test_has_provider_in_database(self, tmp_db):
+        assert Provider.query.all() is not None
+
+    def test_has_dependancy_in_database(self, tmp_db):
+        assert Dependency.query.all() is not None
 
 
 class TestWithFakeProvider(object):
@@ -514,7 +540,7 @@ class TestWithFakeProvider(object):
     @pytest.fixture
     def fake_prov(self):
         # Create the providers
-        fake_provider = mincer.Provider(
+        fake_provider = Provider(
             name="fake server",
             remote_url="http://0.0.0.0:5555/fake/{param}",
             result_selector=".result",
