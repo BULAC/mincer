@@ -37,9 +37,9 @@ from subprocess import Popen
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
-    from HTTPStatus import OK, NOT_FOUND
+    from HTTPStatus import OK, NOT_FOUND, BAD_REQUEST
 except Exception as e:
-    from http.client import OK, NOT_FOUND
+    from http.client import OK, NOT_FOUND, BAD_REQUEST
 
 # Module we are going to test
 import mincer
@@ -227,6 +227,72 @@ class TestWebInterface(object):
         assert "https://www.srihash.org/" in links
         # Doc about SRI
         assert "https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/" in links
+
+    @pytest.mark.parametrize("data,expected,msg", [
+        ({
+            "jquery-js": "aaa",
+            "jquery-js-sha": "bbb",
+            "popper-js": "ccc",
+            "popper-js-sha": "ddd",
+            "bootstrap-js": "eee",
+            "bootstrap-js-sha": "fff",
+            "bootstrap-css": "ggg",
+            "bootstrap-css-sha": "hhh"
+        }, OK, "Valid post"),
+        ({
+            "jquery-js": "aaa",
+        }, BAD_REQUEST, "Missing keys"),
+        ({
+            "jquery-js": "aaa",
+            "jquery-js-sha": "bbb",
+            "popper-js": "ccc",
+            "popper-js-sha": "ddd",
+            "bootstrap-js": "eee",
+            "bootstrap-js-sha": "fff",
+            "bootstrap-css": "ggg",
+            "bootstrap-css-sha": "hhh",
+            "should-not-be-here": "oh no"
+        }, BAD_REQUEST, "Unknown key")
+        ])
+    def test_can_post_admin_values(self, client, tmp_db, data, expected, msg):
+        response = client.post('/admin', data=data)
+
+        # We have an answer...
+        assert response.status_code == expected, msg
+
+    def test_post_admin_values_updates_database(self, client, tmp_db):
+        SENT_DATA = {
+            "jquery-js": "aaa",
+            "jquery-js-sha": "bbb",
+            "popper-js": "ccc",
+            "popper-js-sha": "ddd",
+            "bootstrap-js": "eee",
+            "bootstrap-js-sha": "fff",
+            "bootstrap-css": "ggg",
+            "bootstrap-css-sha": "hhh",
+            }
+        response = client.post('/admin', data=SENT_DATA)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Check database content
+        q = Dependency.query
+        jquery_js = q.filter(Dependency.name == "jquery-js").one()
+        assert jquery_js.url == SENT_DATA["jquery-js"]
+        assert jquery_js.sha == SENT_DATA["jquery-js-sha"]
+
+        popper_js = q.filter(Dependency.name == "popper-js").one()
+        assert popper_js.url == SENT_DATA["popper-js"]
+        assert popper_js.sha == SENT_DATA["popper-js-sha"]
+
+        bootstrap_js = q.filter(Dependency.name == "bootstrap-js").one()
+        assert bootstrap_js.url == SENT_DATA["bootstrap-js"]
+        assert bootstrap_js.sha == SENT_DATA["bootstrap-js-sha"]
+
+        bootstrap_css = q.filter(Dependency.name == "bootstrap-css").one()
+        assert bootstrap_css.url == SENT_DATA["bootstrap-css"]
+        assert bootstrap_css.sha == SENT_DATA["bootstrap-css-sha"]
 
     def test_return_not_found_for_inexistant_providers_status(self, client, tmp_db, bulac_prov):
         URL = "/status/dummy"

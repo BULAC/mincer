@@ -1,7 +1,7 @@
 {% extends "default_page.html" %}
 
 {% block content %}
-	<form>
+	<form method=post>
 		<h2>JQuery</h2>
 
 		<div class="row">
@@ -17,8 +17,11 @@
 						<div class="input-group-addon">JS</div>
 						<input
 							id="jquery-js"
+							name="jquery-js"
 							class="form-control"
-							type="text"
+							type="URL"
+							placeholder="Javascript URL"
+							required
 							aria-describedby="jquery-js-help"
 							value="{{ dependencies['jquery-js'].url }}"
 						>
@@ -44,8 +47,12 @@
 						<div class="input-group-addon">SHA</div>
 						<input
 							id="jquery-js-sha"
+							name="jquery-js-sha"
 							class="form-control"
 							type="text"
+							pattern="sha.*"
+							placeholder="Hash of the javascript file"
+							required
 							aria-describedby="jquery-js-sha-help"
 							value="{{ dependencies['jquery-js'].sha }}"
 						>
@@ -75,8 +82,11 @@
 						<div class="input-group-addon">JS</div>
 						<input
 							id="popper-js"
+							name="popper-js"
 							class="form-control"
-							type="text"
+							type="URL"
+							placeholder="Javascript URL"
+							required
 							aria-describedby="popper-js-help"
 							value="{{ dependencies['popper-js'].url }}"
 						>
@@ -102,8 +112,12 @@
 						<div class="input-group-addon">SHA</div>
 						<input
 							id="popper-js-sha"
+							name="popper-js-sha"
 							class="form-control"
 							type="text"
+							pattern="sha.*"
+							placeholder="Hash of the javascript file"
+							required
 							aria-describedby="popper-js-sha-help"
 							value="{{ dependencies['popper-js'].sha }}"
 						>
@@ -133,8 +147,11 @@
 						<div class="input-group-addon">JS</div>
 						<input
 							id="bootstrap-js"
+							name="bootstrap-js"
 							class="form-control"
-							type="text"
+							type="URL"
+							placeholder="Javascript URL"
+							required
 							aria-describedby="bootstrap-js-help"
 							value="{{ dependencies['bootstrap-js'].url }}"
 						>
@@ -160,8 +177,12 @@
 						<div class="input-group-addon">SHA</div>
 						<input
 							id="bootstrap-js-sha"
+							name="bootstrap-js-sha"
 							class="form-control"
 							type="text"
+							pattern="sha.*"
+							placeholder="Hash of the javascript file"
+							required
 							aria-describedby="bootstrap-js-sha-help"
 							value="{{ dependencies['bootstrap-js'].sha }}"
 						>
@@ -189,8 +210,11 @@
 						<div class="input-group-addon">CSS</div>
 						<input
 							id="bootstrap-css"
+							name="bootstrap-css"
 							class="form-control"
-							type="text"
+							type="URL"
+							placeholder="Javascript URL"
+							required
 							aria-describedby="bootstrap-css-help"
 							value="{{ dependencies['bootstrap-css'].url }}"
 						>
@@ -216,8 +240,12 @@
 						<div class="input-group-addon">SHA</div>
 						<input
 							id="bootstrap-css-sha"
+							name="bootstrap-css-sha"
 							class="form-control"
 							type="text"
+							pattern="sha.*"
+							placeholder="Hash of the javascript file"
+							required
 							aria-describedby="bootstrap-css-sha-help"
 							value="{{ dependencies['bootstrap-css'].sha }}"
 						>

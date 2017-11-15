@@ -40,6 +40,12 @@ import os
 # To create a web server c.f. http://flask.pocoo.org/
 from flask import Flask
 
+# To analyse recieved requests
+from flask import request
+
+# To display messages
+from flask import flash
+
 # For easy database ~ python binding c.f. http://www.sqlalchemy.org/
 from flask_sqlalchemy import SQLAlchemy
 import sqlalchemy
@@ -67,9 +73,9 @@ from slugify import slugify
 # Convenient constant for HTTP status codes
 try:
     # Python 3.5+ only
-    from HTTPStatus import NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
+    from HTTPStatus import OK, NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
 except Exception as e:
-    from http.client import NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
+    from http.client import OK, NOT_FOUND, INTERNAL_SERVER_ERROR, BAD_REQUEST
 
 # Html extraction tools
 from mincer import utils
@@ -78,6 +84,9 @@ from mincer import utils
 app = Flask(__name__)
 
 # Config of the application
+
+# Secret key in order to use cookies
+app.secret_key = "5609f915316fa83ec278e4136989c4"
 
 # Default values
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -261,6 +270,9 @@ def handle_db_operational_error(err):
 
     app.logger.error(msg)
 
+    # Let's prevent any database inconsistencies !
+    db.session.rollback()
+
     abort(INTERNAL_SERVER_ERROR, msg)
 
 
@@ -294,13 +306,60 @@ def status():
         subtitle="Status report")
 
 
-@app.route("/admin")
+@app.route("/admin", methods=['GET', 'POST'])
 def admin():
     """
     Provide an admin page to easily update the JS and CSS dependency.
 
     .. :quickref: Admin; Configure the application
     """
+    if request.method == "POST":
+        # Check if we have only the correct keys from the form
+        ADMIN_KEYS = frozenset({
+            "jquery-js",
+            "jquery-js-sha",
+            "popper-js",
+            "popper-js-sha",
+            "bootstrap-js",
+            "bootstrap-js-sha",
+            "bootstrap-css",
+            "bootstrap-css-sha"})
+        FORM_KEYS = frozenset([k for k in request.form.keys()])
+        if ADMIN_KEYS != FORM_KEYS:
+            app.logger.error(
+                "Form data provided %s do not match"
+                " form data expected %s.",
+                FORM_KEYS,
+                ADMIN_KEYS
+                )
+            return "", BAD_REQUEST
+
+        # TODO: check if the url and sha are valid
+
+        # TODO: check for errors
+        q = Dependency.query
+        jquery_js = q.filter(Dependency.name == "jquery-js").one()
+        jquery_js.url = request.form["jquery-js"]
+        jquery_js.sha = request.form["jquery-js-sha"]
+
+        popper_js = q.filter(Dependency.name == "popper-js").one()
+        popper_js.url = request.form["popper-js"]
+        popper_js.sha = request.form["popper-js-sha"]
+
+        bootstrap_js = q.filter(Dependency.name == "bootstrap-js").one()
+        bootstrap_js.url = request.form["bootstrap-js"]
+        bootstrap_js.sha = request.form["bootstrap-js-sha"]
+
+        bootstrap_css = q.filter(Dependency.name == "bootstrap-css").one()
+        bootstrap_css.url = request.form["bootstrap-css"]
+        bootstrap_css.sha = request.form["bootstrap-css-sha"]
+
+        db.session.commit()
+
+        # TODO: send a message and display a result page
+        flash("Config updated successfully!", "alert-success")
+
+    # GET : We just display the page
     return render_template(
         "admin.html",
         title="Mincer",
