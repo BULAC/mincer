@@ -1,264 +1,119 @@
 {% extends "default_page.html" %}
 
+{% import "forms.html" as form %}
+
 {% block content %}
 	<form method=post>
 		<h2>JQuery</h2>
 
-		<div class="row">
+		{{ form.input_file_and_sha(
+			name="JQuery",
+			file_type="js",
+			res_dict=dependencies,
+			source="https://code.jquery.com/") }}
+		{# <div class="row">
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="jquery-js"
-						class="form-label"
-					>
-						JQuery minified javascript
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">JS</div>
-						<input
-							id="jquery-js"
-							name="jquery-js"
-							class="form-control"
-							type="URL"
-							placeholder="Javascript URL"
-							required
-							aria-describedby="jquery-js-help"
-							value="{{ dependencies['jquery-js'].url }}"
-						>
-					</div>
-					<small
-						id="jquery-js-help"
-						class="form-text text-muted"
-					>
-						Link to the <a href="https://code.jquery.com/">JQuery</a> javascript in slim minified version.
-					</small>
-				</div>
-			</div>
+				{{ form.input(
+					name="jquery-js",
+					value=dependencies['jquery-js'].url,
+					type="URL",
+					label="JQuery minified javascript",
+					addon="JS",
+					placeholder="Javascript URL",
+					help='Link to the <a href="https://code.jquery.com/">JQuery</a> javascript in slim minified version.'|safe) }}
+			</div> <!-- /.col -->
 
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="jquery-js-sha"
-						class="form-label"
-					>
-						JQuery minified javascript SHA
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">SHA</div>
-						<input
-							id="jquery-js-sha"
-							name="jquery-js-sha"
-							class="form-control"
-							type="text"
-							pattern="sha.*"
-							placeholder="Hash of the javascript file"
-							required
-							aria-describedby="jquery-js-sha-help"
-							value="{{ dependencies['jquery-js'].sha }}"
-						>
-					</div>
-					<small
-						id="jquery-js-sha-help"
-						class="form-text text-muted"
-					>
-						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
-					</small>
-				</div>
-			</div>
-		</div>
+				{{ form.input(
+					name="jquery-js-sha",
+					value=dependencies['jquery-js'].sha,
+					type="text",
+					pattern="sha.*"|safe,
+					label="JQuery minified javascript SHA",
+					addon="SHA",
+					placeholder="Hash of the javascript file",
+					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
+			</div> <!-- /.col -->
+		</div> <!-- /.row --> #}
 
 		<h2>Popper.js</h2>
 
 		<div class="row">
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="popper-js"
-						class="form-label"
-					>
-						Popper.js minified javascript
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">JS</div>
-						<input
-							id="popper-js"
-							name="popper-js"
-							class="form-control"
-							type="URL"
-							placeholder="Javascript URL"
-							required
-							aria-describedby="popper-js-help"
-							value="{{ dependencies['popper-js'].url }}"
-						>
-					</div>
-					<small
-						id="popper-js-help"
-						class="form-text text-muted"
-					>
-						Link to the <a href="https://github.com/FezVrasta/popper.js#installation">Popper.js</a> javascript in slim minified version.
-					</small>
-				</div>
-			</div>
+				{{ form.input(
+					name="popper-js",
+					value=dependencies['popper-js'].url,
+					type="URL",
+					label="Popper.js minified javascript",
+					addon="JS",
+					placeholder="Javascript URL",
+					help='Link to the <a href="https://github.com/FezVrasta/popper.js#installation">Popper.js</a> javascript in slim minified version.'|safe) }}
+			</div> <!-- /.col -->
 
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="popper-js-sha"
-						class="form-label"
-					>
-						Popper.js minified javascript SHA
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">SHA</div>
-						<input
-							id="popper-js-sha"
-							name="popper-js-sha"
-							class="form-control"
-							type="text"
-							pattern="sha.*"
-							placeholder="Hash of the javascript file"
-							required
-							aria-describedby="popper-js-sha-help"
-							value="{{ dependencies['popper-js'].sha }}"
-						>
-					</div>
-					<small
-						id="popper-js-sha-help"
-						class="form-text text-muted"
-					>
-						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
-					</small>
-				</div>
-			</div>
-		</div>
+				{{ form.input(
+					name="popper-js-sha",
+					value=dependencies['popper-js'].sha,
+					type="text",
+					pattern="sha.*"|safe,
+					label="Popper.js minified javascript SHA",
+					addon="SHA",
+					placeholder="Hash of the javascript file",
+					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
+			</div> <!-- /.col -->
+		</div> <!-- /.row -->
 
 		<h2>Bootstrap</h2>
 
 		<div class="row">
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="bootstrap-js"
-						class="form-label"
-					>
-						Bootstrap minified javascript
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">JS</div>
-						<input
-							id="bootstrap-js"
-							name="bootstrap-js"
-							class="form-control"
-							type="URL"
-							placeholder="Javascript URL"
-							required
-							aria-describedby="bootstrap-js-help"
-							value="{{ dependencies['bootstrap-js'].url }}"
-						>
-					</div>
-					<small
-						id="bootstrap-js-help"
-						class="form-text text-muted"
-					>
-						Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> javascript in slim minified version.
-					</small>
-				</div>
-			</div>
+				{{ form.input(
+					name="bootstrap-js",
+					value=dependencies['bootstrap-js'].url,
+					type="URL",
+					label="Bootstrap minified javascript",
+					addon="JS",
+					placeholder="Javascript URL",
+					help='Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> javascript in slim minified version.'|safe) }}
+			</div> <!-- /.col -->
 
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="bootstrap-js-sha"
-						class="form-label"
-					>
-						Bootstrap minified javascript SHA
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">SHA</div>
-						<input
-							id="bootstrap-js-sha"
-							name="bootstrap-js-sha"
-							class="form-control"
-							type="text"
-							pattern="sha.*"
-							placeholder="Hash of the javascript file"
-							required
-							aria-describedby="bootstrap-js-sha-help"
-							value="{{ dependencies['bootstrap-js'].sha }}"
-						>
-					</div>
-					<small
-						id="bootstrap-js-sha-help"
-						class="form-text text-muted"
-					>
-						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
-					</small>
-				</div>
-			</div>
-		</div>
+				{{ form.input(
+					name="bootstrap-js-sha",
+					value=dependencies['bootstrap-js'].sha,
+					type="text",
+					pattern="sha.*"|safe,
+					label="Bootstrap minified javascript SHA",
+					addon="SHA",
+					placeholder="Hash of the javascript file",
+					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
+			</div> <!-- /.col -->
+		</div> <!-- /.row -->
 
 		<div class="row">
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="bootstrap-css"
-						class="form-label"
-					>
-						Bootstrap minified CSS
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">CSS</div>
-						<input
-							id="bootstrap-css"
-							name="bootstrap-css"
-							class="form-control"
-							type="URL"
-							placeholder="Javascript URL"
-							required
-							aria-describedby="bootstrap-css-help"
-							value="{{ dependencies['bootstrap-css'].url }}"
-						>
-					</div>
-					<small
-						id="bootstrap-css-help"
-						class="form-text text-muted"
-					>
-						Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> CSS in slim minified version.
-					</small>
-				</div>
-			</div>
+				{{ form.input(
+					name="bootstrap-css",
+					value=dependencies['bootstrap-css'].url,
+					type="URL",
+					label="Bootstrap minified CSS",
+					addon="CSS",
+					placeholder="Javascript URL",
+					help='Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> CSS in slim minified version.'|safe) }}
+			</div> <!-- /.col -->
 
 			<div class="col">
-				<div class="form-group">
-					<label
-						for="bootstrap-css-sha"
-						class="form-label"
-					>
-						Bootstrap minified CSS SHA
-					</label>
-					<div class="input-group">
-						<div class="input-group-addon">SHA</div>
-						<input
-							id="bootstrap-css-sha"
-							name="bootstrap-css-sha"
-							class="form-control"
-							type="text"
-							pattern="sha.*"
-							placeholder="Hash of the javascript file"
-							required
-							aria-describedby="bootstrap-css-sha-help"
-							value="{{ dependencies['bootstrap-css'].sha }}"
-						>
-					</div>
-					<small
-						id="bootstrap-css-sha-help"
-						class="form-text text-muted"
-					>
-						<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.
-					</small>
-				</div>
-			</div>
-		</div>
+				{{ form.input(
+					name="bootstrap-css-sha",
+					value=dependencies['bootstrap-css'].sha,
+					type="text",
+					pattern="sha.*"|safe,
+					label="Bootstrap minified CSS SHA",
+					addon="SHA",
+					placeholder="Hash of the CSS file",
+					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
+			</div> <!-- /.col -->
+		</div> <!-- /.row -->
 
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</form>

@@ -1,0 +1,70 @@
+{% macro input(name, value, type, pattern="", label="", addon="", placeholder="", help="") %}
+<div class="form-group">
+	{% if label != "" %}
+	<label for="{{ name }}" class="form-label">
+		{{ label }}
+	</label>
+	{% endif  %}
+	<div class="input-group">
+		{% if addon != "" %}
+			<div class="input-group-addon">{{ addon }}</div>
+		{% endif %}
+		<input
+			id="{{ name }}"
+			name="{{ name }}"
+			class="form-control"
+			type="{{ type }}"
+			{%- if pattern != "" %}
+			pattern="{{ pattern }}"
+			{% endif %}
+			placeholder="{{ placeholder }}"
+			required
+			aria-describedby="{{ name }}-help"
+			value="{{ value }}"
+		>
+	</div> <!-- /.input-group -->
+	{% if help != "" %}
+		<small id="{{ name }}-help" class="form-text text-muted">
+			{{ help }}
+		</small>
+	{% endif %}
+</div> <!-- /.form-group -->
+{% endmacro %}
+
+<!-- TODO: make some specialized macro -->
+
+{% macro input_file_and_sha(name, file_type, res_dict, source) %}
+{% set addon = file_type|upper %}
+{% set file_type_small = file_type|lower %}
+{% if file_type|lower == "js" %}
+	{% set file_type_full = "Javascript" %}
+{% elif file_type|lower == "css" %}
+	{% set file_type_full = "CSS" %}
+{% else %}
+	{% set file_type_full = file_type %}
+{% endif %}
+<div class="row">
+	<div class="col">
+		{{ input(
+			name=name|lower ~ "-" ~ file_type_small,
+			value=res_dict[name|lower|safe ~ "-" ~ file_type_small].url,
+			type="URL",
+			label=name ~ " minified " ~ file_type_full,
+			addon=addon,
+			placeholder=file_type_full ~ " URL",
+			help=('Link to the <a href="' ~ source|safe ~'">' ~ name ~ '</a> ' ~ file_type_full ~ ' in slim minified version.')|safe) }}
+	</div> <!-- /.col -->
+
+	<div class="col">
+		{{ input(
+			name=name|lower ~ "-" ~ file_type_small ~ "-sha",
+			value=res_dict[name|lower ~ "-" ~ file_type_small].sha,
+			type="text",
+			pattern="sha.*"|safe,
+			label=name ~ " minified " ~ file_type_full ~ " SHA",
+			addon="SHA",
+			placeholder="Hash of the " ~ file_type_full ~ " file",
+			help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
+	</div> <!-- /.col -->
+</div> <!-- /.row -->
+{% endmacro %}
