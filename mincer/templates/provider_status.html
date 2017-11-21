@@ -1,41 +1,44 @@
 {% extends "default_page.html" %}
 
+{% import "forms.html" as form %}
+
 {% block content %}
 	<form>
-		<div class="form-group">
-			<label for="name" class="form-label">Name</label>
-			<input id="name" class="form-control" type="text" aria-describedby="name-help" readonly value="{{ provider.name }}">
-			<small id="name-help" class="form-text text-muted">This is the name you have given to this provider.</small>
-		</div>
+		{{ form.input_provider_param(
+			name="name",
+			value=provider.name,
+			help="This is the name you have given to this provider.",
+			readonly=true) }}
 
-		<div class="form-group">
-			<label for="slug" class="form-label">Slug</label>
-			<input id="slug" class="form-control" type="text" aria-describedby="slug-help" readonly value="{{ provider.slug }}">
-			<small id="slug-help" class="form-text text-muted">Name of the provider as it can be used in the url of mincer</small>
-		</div>
+		{{ form.input_provider_param(
+			name="slug",
+			value=provider.slug,
+			help="Name of the provider as it can be used in the url of mincer.",
+			readonly=true) }}
 
-		<div class="form-group">
-			<label for="remote-url" class="form-label">Remote address</label>
-			<input id="remote-url" class="form-control" type="text" aria-describedby="remote-url-help" readonly value="{{ provider.remote_url }}">
-			<small id="remote-url-help" class="form-text text-muted">Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url.</small>
-		</div>
+		{# TODO: use a type URL here #}
+		{{ form.input_provider_param(
+			name="remote address",
+			value=provider.remote_url,
+			help="Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url."|safe,
+			readonly=true) }}
 
-		<div class="form-group">
-			<label for="result-selector" class="form-label">Result selector</label>
-			<input id="result-selector" class="form-control" type="text" aria-describedby="result-selector-help" readonly value="{{ provider.result_selector }}">
-			<small id="result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the result list in the result page of the provider.</small>
-		</div>
+		{{ form.input_provider_param(
+			name="result selector",
+			value=provider.result_selector,
+			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the result list in the result page of the provider.'|safe,
+			readonly=true) }}
 
-		<div class="form-group">
-			<label for="no-result-selector" class="form-label">No result selector</label>
-			<input id="no-result-selector" class="form-control" type="text" aria-describedby="no-result-selector-help" readonly value="{{ provider.no_result_selector }}">
-			<small id="no-result-selector-help" class="form-text text-muted">Selector in the JQuery syntax to retrieve the no result message in the result page of the provider if no result were found.</small>
-		</div>
+		{{ form.input_provider_param(
+			name="no result selector",
+			value=provider.no_result_selector,
+			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the no result message in the result page of the provider if no result were found.'|safe,
+			readonly=true) }}
 
-		<div class="form-group">
-			<label for="no-result-content" class="form-label">No result content</label>
-			<input id="no-result-content" class="form-control" type="text" aria-describedby="no-result-content-help" readonly value="{{ provider.no_result_content }}">
-			<small id="no-result-content-help" class="form-text text-muted">Text of the no result message we expect to find in the result page of the provider if no result were found.</small>
-		</div>
+		{{ form.input_provider_param(
+			name="no result content",
+			value=provider.no_result_content,
+			help='Text of the no result message we expect to find in the result page of the provider if no result were found.',
+			readonly=true) }}
 	</form>
 {% endblock %}

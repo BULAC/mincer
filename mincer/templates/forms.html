@@ -1,4 +1,4 @@
-{% macro input(name, value, type, pattern="", label="", addon="", placeholder="", help="") %}
+{% macro input(name, value, type, pattern="", label="", addon="", placeholder="", readonly=false, help="") %}
 <div class="form-group">
 	{% if label != "" %}
 	<label for="{{ name }}" class="form-label">
@@ -21,6 +21,9 @@
 			required
 			aria-describedby="{{ name }}-help"
 			value="{{ value }}"
+			{%- if readonly %}
+			readonly
+			{% endif %}
 		>
 	</div> <!-- /.input-group -->
 	{% if help != "" %}
@@ -67,4 +70,15 @@
 			help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
 	</div> <!-- /.col -->
 </div> <!-- /.row -->
+{% endmacro %}
+
+{% macro input_provider_param(name, value, help, readonly=false) %}
+{{ input(
+	name=name,
+	value=value,
+	type="text",
+	label=name|capitalize,
+	placeholder=name,
+	readonly=readonly,
+	help=help|safe) }}
 {% endmacro %}
