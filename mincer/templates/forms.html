@@ -37,7 +37,7 @@
 {% set addon = file_type|upper %}
 {% set file_type_small = file_type|lower %}
 {% if file_type|lower == "js" %}
-	{% set file_type_full = "Javascript" %}
+	{% set file_type_full = "javascript" %}
 {% elif file_type|lower == "css" %}
 	{% set file_type_full = "CSS" %}
 {% else %}
@@ -52,7 +52,7 @@
 			label=name ~ " minified " ~ file_type_full,
 			addon=addon,
 			placeholder=file_type_full ~ " URL",
-			help=('Link to the <a href="' ~ source|safe ~'">' ~ name ~ '</a> ' ~ file_type_full ~ ' in slim minified version.')|safe) }}
+			help=('Link to the <a href="'|safe ~ source|safe ~'">'|safe ~ name ~ '</a> '|safe ~ file_type_full ~ ' in slim minified version.')|safe) }}
 	</div> <!-- /.col -->
 
 	<div class="col">

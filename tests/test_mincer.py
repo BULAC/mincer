@@ -199,9 +199,9 @@ class TestWebInterface(object):
         assert form_groups["JQuery minified javascript SHA"]\
             == dependencies["jquery-js"].sha
 
-        assert form_groups["Popper.js minified javascript"]\
+        assert form_groups["Popper minified javascript"]\
             == dependencies["popper-js"].url
-        assert form_groups["Popper.js minified javascript SHA"]\
+        assert form_groups["Popper minified javascript SHA"]\
             == dependencies["popper-js"].sha
 
         assert form_groups["Bootstrap minified javascript"]\

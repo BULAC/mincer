@@ -10,110 +10,29 @@
 			name="JQuery",
 			file_type="js",
 			res_dict=dependencies,
-			source="https://code.jquery.com/") }}
-		{# <div class="row">
-			<div class="col">
-				{{ form.input(
-					name="jquery-js",
-					value=dependencies['jquery-js'].url,
-					type="URL",
-					label="JQuery minified javascript",
-					addon="JS",
-					placeholder="Javascript URL",
-					help='Link to the <a href="https://code.jquery.com/">JQuery</a> javascript in slim minified version.'|safe) }}
-			</div> <!-- /.col -->
-
-			<div class="col">
-				{{ form.input(
-					name="jquery-js-sha",
-					value=dependencies['jquery-js'].sha,
-					type="text",
-					pattern="sha.*"|safe,
-					label="JQuery minified javascript SHA",
-					addon="SHA",
-					placeholder="Hash of the javascript file",
-					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
-			</div> <!-- /.col -->
-		</div> <!-- /.row --> #}
+			source="https://code.jquery.com/"|safe) }}
 
 		<h2>Popper.js</h2>
 
-		<div class="row">
-			<div class="col">
-				{{ form.input(
-					name="popper-js",
-					value=dependencies['popper-js'].url,
-					type="URL",
-					label="Popper.js minified javascript",
-					addon="JS",
-					placeholder="Javascript URL",
-					help='Link to the <a href="https://github.com/FezVrasta/popper.js#installation">Popper.js</a> javascript in slim minified version.'|safe) }}
-			</div> <!-- /.col -->
-
-			<div class="col">
-				{{ form.input(
-					name="popper-js-sha",
-					value=dependencies['popper-js'].sha,
-					type="text",
-					pattern="sha.*"|safe,
-					label="Popper.js minified javascript SHA",
-					addon="SHA",
-					placeholder="Hash of the javascript file",
-					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
-			</div> <!-- /.col -->
-		</div> <!-- /.row -->
+		{{ form.input_file_and_sha(
+			name="Popper",
+			file_type="js",
+			res_dict=dependencies,
+			source="https://github.com/FezVrasta/popper.js#installation"|safe) }}
 
 		<h2>Bootstrap</h2>
 
-		<div class="row">
-			<div class="col">
-				{{ form.input(
-					name="bootstrap-js",
-					value=dependencies['bootstrap-js'].url,
-					type="URL",
-					label="Bootstrap minified javascript",
-					addon="JS",
-					placeholder="Javascript URL",
-					help='Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> javascript in slim minified version.'|safe) }}
-			</div> <!-- /.col -->
+		{{ form.input_file_and_sha(
+			name="Bootstrap",
+			file_type="js",
+			res_dict=dependencies,
+			source="https://www.bootstrapcdn.com/"|safe) }}
 
-			<div class="col">
-				{{ form.input(
-					name="bootstrap-js-sha",
-					value=dependencies['bootstrap-js'].sha,
-					type="text",
-					pattern="sha.*"|safe,
-					label="Bootstrap minified javascript SHA",
-					addon="SHA",
-					placeholder="Hash of the javascript file",
-					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
-			</div> <!-- /.col -->
-		</div> <!-- /.row -->
-
-		<div class="row">
-			<div class="col">
-				{{ form.input(
-					name="bootstrap-css",
-					value=dependencies['bootstrap-css'].url,
-					type="URL",
-					label="Bootstrap minified CSS",
-					addon="CSS",
-					placeholder="Javascript URL",
-					help='Link to the <a href="https://www.bootstrapcdn.com/">Bootstrap</a> CSS in slim minified version.'|safe) }}
-			</div> <!-- /.col -->
-
-			<div class="col">
-				{{ form.input(
-					name="bootstrap-css-sha",
-					value=dependencies['bootstrap-css'].sha,
-					type="text",
-					pattern="sha.*"|safe,
-					label="Bootstrap minified CSS SHA",
-					addon="SHA",
-					placeholder="Hash of the CSS file",
-					help='<a href="https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/">SubRessource Integrity</a> hash of the file. You can get it using <a href="https://www.srihash.org/">SRI Hash Generator</a>.'|safe) }}
-			</div> <!-- /.col -->
-		</div> <!-- /.row -->
+		{{ form.input_file_and_sha(
+			name="Bootstrap",
+			file_type="css",
+			res_dict=dependencies,
+			source="https://www.bootstrapcdn.com/"|safe) }}
 
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</form>
