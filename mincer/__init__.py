@@ -386,6 +386,11 @@ def provider_status(provider_slug):
         subtitle="Status report")
 
 
+@app.route("/example/<string:provider_slug>/<string:param>")
+def example(provider_slug, param):
+    pass
+
+
 @app.route("/providers/<string:provider_slug>/<string:param>")
 @utils.add_response_headers({"Access-Control-Allow-Origin": "*"})
 def providers(provider_slug, param):

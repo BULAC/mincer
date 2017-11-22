@@ -3,6 +3,7 @@
 {% import "forms.html" as form %}
 
 {% block content %}
+<section>
 	<form>
 		{{ form.input_provider_param(
 			name="name",
@@ -41,4 +42,19 @@
 			help='Text of the no result message we expect to find in the result page of the provider if no result were found.',
 			readonly=true) }}
 	</form>
+</section>
+
+<section>
+	<h1>Admin pages</h1>
+	<div class="container">
+		<div class="row">
+			<a
+			class="btn btn-outline-primary btn-lg col-sm"
+			role="button"
+			href="{{ url_for('example') }}">
+				Global status
+			</a>
+		</div> <!-- /.row -->
+	</div> <!-- /.container -->
+</section>
 {% endblock %}
