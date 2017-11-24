@@ -4,7 +4,22 @@
 	<h2>Test provider</h2>
 	<form
 		class="form-row"
-		onsubmit="event.preventDefault(); $('#search-result').load('/example/{{ provider.slug }}',$(this).serializeArray())">
+		onsubmit="event.preventDefault(); $.ajax( {
+			method: 'POST',
+			url: '/example/{{ provider.slug }}',
+			data: $(this).serializeArray(),
+			beforeSend: function(){
+				$('#loading').html('Loading...');
+			},
+			complete: function(){
+				$('#loading').html('');
+			}
+		}).done(function(response){
+			$('#search-result').html(response);
+		}).fail(function(response){
+			$('#search-result').html('Erreurgg'+response.responsetext);
+		});"
+		>
 		<div class="input-group col-lg-8 offset-lg-2">
 			<input
 				id="search"
@@ -18,5 +33,6 @@
       </span>
 		</div> <!-- input-group -->
 	</form>
+	<div id="loading"></div>
 	<div id="search-result"></div>
 {% endblock %}
