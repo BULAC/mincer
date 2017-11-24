@@ -1,10 +1,15 @@
-<form class="form-inline" action="/example/{{ provider.slug }}" method=get>
+{% extends "default_page.html" %}
+
+{% block content %}
 	<h2>Test provider</h2>
-	<input
-		id="search"
-		name="search"
-		class="form-control"
-		type="text"
-		placeholder="Your search terms to test this provider"
-	>
-</form>
+	<form class="form-inline" action="/example/{{ provider.slug }}" method=post>
+		<input
+			id="search"
+			name="search"
+			class="form-control"
+			type="text"
+			placeholder="Your search terms to test this provider"
+		>
+		<button type="submit" class="btn btn-primary">Search</button>
+	</form>
+{% endblock %}

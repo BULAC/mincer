@@ -28,9 +28,6 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
-# To use clean enumeration type
-from enum import Enum
-
 # To decode form-encoded values
 from urllib.parse import unquote_plus
 
@@ -46,9 +43,11 @@ from flask import request
 # To display messages
 from flask import flash
 
-# For easy database ~ python binding c.f. http://www.sqlalchemy.org/
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
+# To redirect to another page
+from flask import redirect
+
+# To retrieve the url corresponding to a specific route
+from flask import url_for
 
 # Flask application context all purpose variable
 from flask import g
@@ -58,6 +57,10 @@ from flask import render_template
 
 # For easy redirecting to error page
 from flask import abort
+
+# For easy database ~ python binding c.f. http://www.sqlalchemy.org/
+from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy
 
 # To manipulate HTML DOM using JQuery query syntax
 from pyquery import PyQuery
@@ -386,9 +389,32 @@ def provider_status(provider_slug):
         subtitle="Status report")
 
 
-@app.route("/example/<string:provider_slug>/<string:param>")
-def example(provider_slug, param):
-    pass
+# TODO: test this !!!!
+@app.route("/example/<string:provider_slug>", methods=['GET', 'POST'])
+def example(provider_slug):
+    # Method POST
+    if request.method == "POST":
+        # Check if we have only the correct keys from the form
+        if 'search' not in request.form.keys():
+            app.logger.error("Form data missing the 'search' key.")
+            return "", BAD_REQUEST
+
+        return redirect(
+            url_for(
+                "providers",
+                provider_slug=provider_slug,
+                param=request.form['search']))
+
+    # method GET
+
+    # Retrieve the provider from database
+    provider = Provider.query.filter(Provider.slug == provider_slug).first()
+    return render_template(
+        "example.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
+        provider=provider,
+        title=provider.name,
+        subtitle="Test query")
 
 
 @app.route("/providers/<string:provider_slug>/<string:param>")

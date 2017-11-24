@@ -45,14 +45,14 @@
 </section>
 
 <section>
-	<h1>Admin pages</h1>
+	<h1>Utilities</h1>
 	<div class="container">
 		<div class="row">
 			<a
 			class="btn btn-outline-primary btn-lg col-sm"
 			role="button"
-			href="{{ url_for('example') }}">
-				Global status
+			href="{{ url_for('example', provider_slug=provider.slug) }}">
+				Test this provider
 			</a>
 		</div> <!-- /.row -->
 	</div> <!-- /.container -->

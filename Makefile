@@ -11,10 +11,11 @@ initdev:
 	python3 -m pip install pipenv --upgrade --user
 	pipenv install --three --dev --skip-lock
 
-# initprod:
-# 	python3 -m pip install pip --upgrade --user
-# 	python3 -m pip install pipenv --upgrade --user
-# 	pipenv install --three --skip-lock
+# Create a production environnement with just what's needed
+initprod:
+	python3 -m pip install pip --upgrade --user
+	python3 -m pip install pipenv --upgrade --user
+	pipenv install --three --skip-lock
 
 # Launch all inexpensive tests
 test:
@@ -37,11 +38,11 @@ doc:
 
 # Run the server in production mode
 prodrun:
-	FLASK_APP=mincer/__init__.py flask run
+	FLASK_APP=mincer/__init__.py flask run --host=0.0.0.0
 
 # Run the server in debug mode
 debugrun:
-	FLASK_APP=mincer/__init__.py FLASK_DEBUG=1 flask run
+	FLASK_APP=mincer/__init__.py FLASK_DEBUG=1 flask run --host=0.0.0.0
 
 initdb:
 	FLASK_APP=mincer/__init__.py flask initdb
