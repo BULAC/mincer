@@ -2,7 +2,9 @@
 
 {% block content %}
 	<h2>Test provider</h2>
-	<form class="form-row" action="/example/{{ provider.slug }}" method=post>
+	<form
+		class="form-row"
+		onsubmit="event.preventDefault(); $('#search-result').load('/example/{{ provider.slug }}',$(this).serializeArray())">
 		<div class="input-group col-lg-8 offset-lg-2">
 			<input
 				id="search"
@@ -16,4 +18,5 @@
       </span>
 		</div> <!-- input-group -->
 	</form>
+	<div id="search-result"></div>
 {% endblock %}
