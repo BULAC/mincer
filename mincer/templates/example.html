@@ -2,14 +2,18 @@
 
 {% block content %}
 	<h2>Test provider</h2>
-	<form class="form-inline" action="/example/{{ provider.slug }}" method=post>
-		<input
-			id="search"
-			name="search"
-			class="form-control"
-			type="text"
-			placeholder="Your search terms to test this provider"
-		>
-		<button type="submit" class="btn btn-primary">Search</button>
+	<form class="form-row" action="/example/{{ provider.slug }}" method=post>
+		<div class="input-group col-lg-8 offset-lg-2">
+			<input
+				id="search"
+				name="search"
+				class="form-control"
+				type="text"
+				placeholder="Your search terms to test this provider"
+			>
+			<span class="input-group-btn">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </span>
+		</div> <!-- input-group -->
 	</form>
 {% endblock %}
