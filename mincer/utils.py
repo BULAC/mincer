@@ -31,9 +31,13 @@ from pyquery import PyQuery
 from flask import make_response
 
 
-def once(lst: 'seq[N](bool),N>=0') -> 'bool':
+def once(lst):
     """
-    Return `True` if one and only one element of the sequence is `True`.
+    Params:
+        lst (sequence of bool): a sequence of boolean values.
+
+    Returns:
+        `True` if one and only one element of the sequence is `True`.
 
     Examples:
         `True` if only one element is `True`...
