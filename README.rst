@@ -2,6 +2,10 @@
 Mincer: stuff your websites with the best ingredients
 #####################################################
 
+.. image:: mincer/static/mincer_logo_200px.png
+	:target: https://www.gnu.org/licenses/agpl-3.0
+	:alt: License: AGPL v3
+
 .. image:: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
 	:target: https://www.gnu.org/licenses/agpl-3.0
 	:alt: License: AGPL v3
