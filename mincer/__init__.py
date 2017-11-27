@@ -183,7 +183,7 @@ def init_db():
     # Give valid defaults for dependencies
     jquery = Dependency(
         name="jquery-js",
-        url="https://code.jquery.com/jquery-3.2.1.slim.min.js",
+        url="https://code.jquery.com/jquery-3.2.1.min.js",
         sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
     popper = Dependency(
         name="popper-js",
@@ -409,6 +409,7 @@ def example(provider_slug):
 
     # Retrieve the provider from database
     provider = Provider.query.filter(Provider.slug == provider_slug).first()
+    # Return the page with no search
     return render_template(
         "example.html",
         dependencies={e.name: e for e in Dependency.query.all()},
