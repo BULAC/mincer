@@ -2,6 +2,7 @@
 
 {% block content %}
 	<h2>Test provider</h2>
+	{# dynamic loading taken from : https://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery#12190482 #}
 	<form
 		class="form-row"
 		onsubmit="event.preventDefault(); $.ajax( {
@@ -17,7 +18,7 @@
 		}).done(function(response){
 			$('#search-result').html(response);
 		}).fail(function(response){
-			$('#search-result').html('Erreurgg'+response.responsetext);
+			$('#search-result').html('Erreur'+response.responsetext);
 		});"
 		>
 		<div class="input-group col-lg-8 offset-lg-2">
