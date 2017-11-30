@@ -181,24 +181,28 @@ def init_db():
     db.session.commit()
 
     # Give valid defaults for dependencies
-    jquery = Dependency(
-        name="jquery-js",
-        url="https://code.jquery.com/jquery-3.2.1.min.js",
-        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
-    popper = Dependency(
-        name="popper-js",
-        url="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js",
-        sha="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh")
-    bootstrapjs = Dependency(
-        name="bootstrap-js",
-        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js",
-        sha="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ")
-    bootstrapcss = Dependency(
-        name="bootstrap-css",
-        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
-        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
-
-    dependencies = [jquery, popper, bootstrapjs, bootstrapcss]
+    dependencies = [
+        Dependency(
+            name="jquery-js",
+            url="https://code.jquery.com/jquery-3.2.1.min.js",
+            sha="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="),
+        Dependency(
+            name="popper-js",
+            url="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.js",
+            sha="sha256-gR6ZCR2s8m5B2pOtRyDld7PWjHRqxSfLBMWYNs2TxOw="),
+        Dependency(
+            name="bootstrap-js",
+            url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js",
+            sha="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"),
+        Dependency(
+            name="bootstrap-css",
+            url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
+            sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"),
+        Dependency(
+            name="font-awesome-css",
+            url="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
+            sha="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN")
+        ]
     db.session.add_all(dependencies)
     db.session.commit()
 
@@ -326,7 +330,9 @@ def admin():
             "bootstrap-js",
             "bootstrap-js-sha",
             "bootstrap-css",
-            "bootstrap-css-sha"})
+            "bootstrap-css-sha",
+            "font-awesome-css",
+            "font-awesome-css-sha"})
         FORM_KEYS = frozenset([k for k in request.form.keys()])
         if ADMIN_KEYS != FORM_KEYS:
             app.logger.error(

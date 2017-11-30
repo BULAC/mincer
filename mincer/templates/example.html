@@ -10,10 +10,10 @@
 			url: '/example/{{ provider.slug }}',
 			data: $(this).serializeArray(),
 			beforeSend: function(){
-				$('#loading').html('Loading...');
+				$('#loading').show();
 			},
 			complete: function(){
-				$('#loading').html('');
+				$('#loading').hide();
 			}
 		}).done(function(response){
 			$('#search-result').html(response);
@@ -34,6 +34,9 @@
       </span>
 		</div> <!-- input-group -->
 	</form>
-	<div id="loading"></div>
+	<div id="loading" class="text-center" style="display: none">
+		<span class="fa fa-spinner fa-pulse fa-3x fa-fw\"></span>
+		<span class="sr-only">Loading...</span>
+	</div>
 	<div id="search-result"></div>
 {% endblock %}

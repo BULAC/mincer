@@ -214,6 +214,11 @@ class TestWebInterface(object):
         assert form_groups["Bootstrap minified CSS SHA"]\
             == dependencies["bootstrap-css"].sha
 
+        assert form_groups["Font-Awesome minified CSS"]\
+            == dependencies["font-awesome-css"].url
+        assert form_groups["Font-Awesome minified CSS SHA"]\
+            == dependencies["font-awesome-css"].sha
+
         # Do we have a button to validate the form ?
         assert has_form_submit_button(data)
 
@@ -237,7 +242,9 @@ class TestWebInterface(object):
             "bootstrap-js": "eee",
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
-            "bootstrap-css-sha": "hhh"
+            "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj"
         }, OK, "Valid post"),
         ({
             "jquery-js": "aaa",
@@ -251,6 +258,8 @@ class TestWebInterface(object):
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
             "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj",
             "should-not-be-here": "oh no"
         }, BAD_REQUEST, "Unknown key")
         ])
@@ -270,6 +279,8 @@ class TestWebInterface(object):
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
             "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj"
             }
         response = client.post('/admin', data=SENT_DATA)
 
