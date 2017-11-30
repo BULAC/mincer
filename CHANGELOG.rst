@@ -5,6 +5,8 @@ CHANGELOG
 Branche develop
 ===============
 
+*	Les page d'exemple affichent maintenant leur résultat en pur AJAX ce qui peut servir de modèle pour écrire un client utilisant Mincer
+
 Version 1.3.0
 =============
 
