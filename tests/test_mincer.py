@@ -41,6 +41,9 @@ try:
 except Exception as e:
     from http.client import OK, NOT_FOUND, BAD_REQUEST
 
+# To access real url
+from flask import url_for
+
 # Module we are going to test
 import mincer
 from mincer import Provider, Dependency
@@ -97,7 +100,8 @@ def tmp_db(tmp_db_uri):
 @pytest.fixture
 def client():
     """Returns a test client for the mincer Flask app."""
-    return mincer.app.test_client()
+    with mincer.app.app_context():
+        yield mincer.app.test_client()
 
 
 @pytest.fixture
@@ -127,17 +131,21 @@ class TestWebInterface(object):
         assert has_header_title(data, "Mincer")
         assert has_header_subtitle(data, "Home")
 
-        links = all_links(data)
+        with mincer.app.test_request_context('/'):
+            links = all_links(data)
 
-        # TODO: make this dynamic
-        # Test the presence of essenciel links
-        assert "/status/koha-search" in links
-        assert "/status/koha-booklist" in links
+            # Test the presence of essenciel links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-search") in links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-booklist") in links
+            assert url_for("provider_new") in links
 
-        # TODO: use url_for()
-        # Do we have admin links ?
-        assert "/status" in links
-        assert "/admin" in links
+            # Do we have admin links ?
+            assert url_for("status") in links
+            assert url_for("admin") in links
 
     def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
@@ -164,9 +172,15 @@ class TestWebInterface(object):
         assert "Server responding?" in all_table_column_headers(data)
         assert "Correctly formed answer?" in all_table_column_headers(data)
 
-        # Test the presence of essencial links
-        assert "/status/koha-search" in all_links(data)
-        assert "/status/koha-booklist" in all_links(data)
+        with mincer.app.test_request_context('/status'):
+            links = all_links(data)
+            # Test the presence of essencial links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-search") in links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-booklist") in links
 
     def test_has_admin_page(self, client, tmp_db):
         response = client.get('/admin')
@@ -232,6 +246,40 @@ class TestWebInterface(object):
         assert "https://www.srihash.org/" in links
         # Doc about SRI
         assert "https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/" in links
+
+    def test_has_new_provider_page(self, client, tmp_db):
+        response = client.get('/provider/new')
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML page
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Provider Add a new provider")
+        assert has_header_title(data, "Provider")
+        assert has_header_subtitle(data, "Add a new provider")
+
+        assert has_form(data)
+
+        # Do we have the essential info in it
+        form_groups = all_form_groups(data)
+
+        assert form_groups["Name"] == ""
+        assert form_groups["Slug"] == ""
+        assert form_groups["Remote address"] == ""
+        assert form_groups["Result selector"] == ""
+        assert form_groups["No result selector"] == ""
+        assert form_groups["No result content"] == ""
+
+        # Do we have a button to validate the form ?
+        assert has_form_submit_button(data)
 
     @pytest.mark.parametrize("data,expected,msg", [
         ({

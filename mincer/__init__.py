@@ -388,7 +388,7 @@ def provider_status(provider_slug):
         abort(NOT_FOUND)
 
     return render_template(
-        "provider_status.html",
+        "provider.html",
         dependencies={e.name: e for e in Dependency.query.all()},
         provider=provider,
         title=provider.name,
@@ -396,8 +396,29 @@ def provider_status(provider_slug):
 
 
 # TODO: test this !!!!
+@app.route("/provider/new")
+def provider_new():
+    return render_template(
+        "provider.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
+        provider=None,
+        title="Provider",
+        subtitle="Add a new provider")
+
+
+# TODO: test this !!!!
 @app.route("/example/<string:provider_slug>", methods=['GET', 'POST'])
 def example(provider_slug):
+    """
+    Display a search field to test the provider.
+
+    :query string provider_slug: slugified name of the provider to test as
+        registered in the database in the database.
+
+    :status 200: everything was ok
+
+    .. :quickref: Search; Search test.
+    """
     # Method POST
     if request.method == "POST":
         # Check if we have only the correct keys from the form
@@ -442,7 +463,7 @@ def providers(provider_slug, param):
     :status 200: everything was ok
     :status 404: when no `param` is provided
 
-    .. :quickref: Search; Retrieve search result list from KOHA
+    .. :quickref: Search; Extract search results from the provider
     """
     # Retrieve the provider from database
     provider = Provider.query.filter(Provider.slug == provider_slug).first()

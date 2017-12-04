@@ -3,44 +3,63 @@
 {% import "forms.html" as form %}
 
 {% block content %}
+{% if provider is none %}
+	{% set name = "" %}
+	{% set slug = "" %}
+	{% set remote_url = "" %}
+	{% set result_selector = "" %}
+	{% set no_result_selector = "" %}
+	{% set no_result_content = "" %}
+	{% set readonly = false %}
+{% else %}
+	{% set name = provider.name %}
+	{% set slug = provider.slug %}
+	{% set remote_url = provider.remote_url %}
+	{% set result_selector = provider.result_selector %}
+	{% set no_result_selector = provider.no_result_selector %}
+	{% set no_result_content = provider.no_result_content %}
+	{% set readonly = true %}
+{% endif %}
 <section>
 	<form>
 		{{ form.input_provider_param(
 			name="name",
-			value=provider.name,
+			value=name,
 			help="This is the name you have given to this provider.",
-			readonly=true) }}
+			readonly=readonly) }}
 
 		{{ form.input_provider_param(
 			name="slug",
-			value=provider.slug,
+			value=slug,
 			help="Name of the provider as it can be used in the url of mincer.",
-			readonly=true) }}
+			readonly=readonly) }}
 
 		{# TODO: use a type URL here #}
 		{{ form.input_provider_param(
 			name="remote address",
-			value=provider.remote_url,
+			value=remote_url,
 			help="Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url."|safe,
-			readonly=true) }}
+			readonly=readonly) }}
 
 		{{ form.input_provider_param(
 			name="result selector",
-			value=provider.result_selector,
+			value=result_selector,
 			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the result list in the result page of the provider.'|safe,
-			readonly=true) }}
+			readonly=readonly) }}
 
 		{{ form.input_provider_param(
 			name="no result selector",
-			value=provider.no_result_selector,
+			value=no_result_selector,
 			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the no result message in the result page of the provider if no result were found.'|safe,
-			readonly=true) }}
+			readonly=readonly) }}
 
 		{{ form.input_provider_param(
 			name="no result content",
-			value=provider.no_result_content,
+			value=no_result_content,
 			help='Text of the no result message we expect to find in the result page of the provider if no result were found.',
-			readonly=true) }}
+			readonly=readonly) }}
+
+		<button type="submit" class="btn btn-primary">Ajouter</button>
 	</form>
 </section>
 
