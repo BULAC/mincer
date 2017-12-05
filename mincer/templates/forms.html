@@ -1,7 +1,8 @@
 {% macro input(name, value, type, pattern="", label="", addon="", placeholder="", readonly=false, help="") %}
+{% set clean_name = name|replace(" ", "-") %}
 <div class="form-group">
 	{% if label != "" %}
-	<label for="{{ name }}" class="form-label">
+	<label for="{{ clean_name }}" class="form-label">
 		{{ label }}
 	</label>
 	{% endif  %}
@@ -10,8 +11,8 @@
 			<div class="input-group-addon">{{ addon }}</div>
 		{% endif %}
 		<input
-			id="{{ name }}"
-			name="{{ name }}"
+			id="{{ clean_name }}"
+			name="{{ clean_name }}"
 			class="form-control"
 			type="{{ type }}"
 			{%- if pattern != "" %}
@@ -19,7 +20,7 @@
 			{% endif %}
 			placeholder="{{ placeholder }}"
 			required
-			aria-describedby="{{ name }}-help"
+			aria-describedby="{{ clean_name }}-help"
 			value="{{ value }}"
 			{%- if readonly %}
 			readonly
@@ -27,7 +28,7 @@
 		>
 	</div> <!-- /.input-group -->
 	{% if help != "" %}
-		<small id="{{ name }}-help" class="form-text text-muted">
+		<small id="{{ clean_name }}-help" class="form-text text-muted">
 			{{ help }}
 		</small>
 	{% endif %}

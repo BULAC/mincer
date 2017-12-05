@@ -247,40 +247,6 @@ class TestWebInterface(object):
         # Doc about SRI
         assert "https://hacks.mozilla.org/2015/09/subresource-integrity-in-firefox-43/" in links
 
-    def test_has_new_provider_page(self, client, tmp_db):
-        response = client.get('/provider/new')
-
-        # We have an answer...
-        assert response.status_code == OK
-
-        # ...it's an HTML page
-        assert response.mimetype == "text/html"
-
-        # Let's convert it for easy inspection
-        data = response.get_data(as_text=True)
-
-        # Test if we recieved a full HTML page
-        assert is_html5_page(data)
-
-        assert has_page_title(data, "Provider Add a new provider")
-        assert has_header_title(data, "Provider")
-        assert has_header_subtitle(data, "Add a new provider")
-
-        assert has_form(data)
-
-        # Do we have the essential info in it
-        form_groups = all_form_groups(data)
-
-        assert form_groups["Name"] == ""
-        assert form_groups["Slug"] == ""
-        assert form_groups["Remote address"] == ""
-        assert form_groups["Result selector"] == ""
-        assert form_groups["No result selector"] == ""
-        assert form_groups["No result content"] == ""
-
-        # Do we have a button to validate the form ?
-        assert has_form_submit_button(data)
-
     @pytest.mark.parametrize("data,expected,msg", [
         ({
             "jquery-js": "aaa",
@@ -352,6 +318,79 @@ class TestWebInterface(object):
         bootstrap_css = q.filter(Dependency.name == "bootstrap-css").one()
         assert bootstrap_css.url == SENT_DATA["bootstrap-css"]
         assert bootstrap_css.sha == SENT_DATA["bootstrap-css-sha"]
+
+    def test_has_new_provider_page(self, client, tmp_db):
+        response = client.get('/provider/new')
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML page
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Provider Add a new provider")
+        assert has_header_title(data, "Provider")
+        assert has_header_subtitle(data, "Add a new provider")
+
+        assert has_form(data)
+
+        # Do we have the essential info in it
+        form_groups = all_form_groups(data)
+
+        assert form_groups["Name"] == ""
+        # TODO: Remove slug that should not appear in the form at all
+        assert form_groups["Slug"] == ""
+        assert form_groups["Remote address"] == ""
+        assert form_groups["Result selector"] == ""
+        assert form_groups["No result selector"] == ""
+        assert form_groups["No result content"] == ""
+
+        # Do we have a button to validate the form ?
+        assert has_form_submit_button(data)
+
+    def test_can_post_new_provider(self, client, tmp_db):
+        SENT_DATA = {
+            "name": "aaa",
+            "slug": "bbb",
+            "remote-address": "ccc",
+            "result-selector": "ddd",
+            "no-result-selector": "eee",
+            "no-result-content": "fff",
+            }
+        response = client.post('/provider', data=SENT_DATA)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+    def test_post_new_provider_updates_database(self, client, tmp_db):
+        SENT_DATA = {
+            "name": "aaa",
+            "slug": "bbb",
+            "remote-address": "ccc",
+            "result-selector": "ddd",
+            "no-result-selector": "eee",
+            "no-result-content": "fff",
+            }
+        response = client.post('/provider', data=SENT_DATA)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Check database content
+        new = Provider.query.filter(Provider.slug == SENT_DATA['slug']).one()
+
+        assert new.name == SENT_DATA["name"]
+        assert new.slug == SENT_DATA["slug"]
+        assert new.remote_address == SENT_DATA["remote-address"]
+        assert new.result_selector == SENT_DATA["result-selector"]
+        assert new.no_result_selector == SENT_DATA["no-result-selector"]
+        assert new.no_result_content == SENT_DATA["no-result-content"]
 
     def test_return_not_found_for_inexistant_providers_status(self, client, tmp_db, bulac_prov):
         URL = "/status/dummy"

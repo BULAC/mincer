@@ -59,21 +59,32 @@
 			help='Text of the no result message we expect to find in the result page of the provider if no result were found.',
 			readonly=readonly) }}
 
-		<button type="submit" class="btn btn-primary">Ajouter</button>
+		{% if provider is none %}
+			<button
+				type="submit"
+				class="btn btn-primary"
+				formmethod=post
+				formaction="{{ url_for('provider') }}"
+			>
+				Ajouter
+			</button>
+		{% endif %}
 	</form>
 </section>
 
-<section>
-	<h1>Utilities</h1>
-	<div class="container">
-		<div class="row">
-			<a
-			class="btn btn-outline-primary btn-lg col-sm"
-			role="button"
-			href="{{ url_for('example', provider_slug=provider.slug) }}">
-				Test this provider
-			</a>
-		</div> <!-- /.row -->
-	</div> <!-- /.container -->
-</section>
+{% if provider is not none %}
+	<section>
+		<h1>Utilities</h1>
+		<div class="container">
+			<div class="row">
+				<a
+				class="btn btn-outline-primary btn-lg col-sm"
+				role="button"
+				href="{{ url_for('example', provider_slug=provider.slug) }}">
+					Test this provider
+				</a>
+			</div> <!-- /.row -->
+		</div> <!-- /.container -->
+	</section>
+{% endif %}
 {% endblock %}

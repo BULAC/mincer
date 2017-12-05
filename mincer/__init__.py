@@ -395,7 +395,6 @@ def provider_status(provider_slug):
         subtitle="Status report")
 
 
-# TODO: test this !!!!
 @app.route("/provider/new")
 def provider_new():
     return render_template(
@@ -404,6 +403,63 @@ def provider_new():
         provider=None,
         title="Provider",
         subtitle="Add a new provider")
+
+
+# TODO: merge this with providers()
+@app.route("/provider", methods=['POST'])
+def provider():
+    app.logger.info("I'm there")
+    # Check if we have only the correct keys from the form
+    PROVIDER_KEYS = frozenset({
+        "name",
+        "slug",  # TODO: Remove slug that should not appear in the form
+        "remote-address",
+        "result-selector",
+        "no-result-selector",
+        "no-result-content",
+        })
+    FORM_KEYS = frozenset([k for k in request.form.keys()])
+    app.logger.info("I'm there too")
+    if PROVIDER_KEYS != FORM_KEYS:
+        app.logger.error(
+            "Form data provided %s do not match"
+            " form data expected %s.",
+            FORM_KEYS,
+            PROVIDER_KEYS
+            )
+        return "toto", BAD_REQUEST
+
+    app.logger.info("I'm there toutou")
+    # TODO: check for errors
+    # TODO: check for existing provider with same name/slug
+
+    new_provider = Provider(
+        name=request.form["name"],
+        remote_url=request.form["remote-url"],
+        result_selector=request.form["result-selector"],
+        no_result_selector=request.form["no-result-selector"],
+        no_result_content=request.form["no-result-content"])
+
+    app.logger.info("I'm there woof")
+
+    # Add them to the database
+    db.session.add(new_provider)
+
+    # Commit the transaction
+    db.session.commit()
+
+    # TODO: send a message and display a result page
+    flash("Provider {name} added successfully!".format(
+        name=new_provider.name), "alert-success")
+
+    app.logger.info("I'm there wouaf")
+
+    return render_template(
+        "provider.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
+        provider=new_provider,
+        title=provider.name,
+        subtitle="Status report")
 
 
 # TODO: test this !!!!
