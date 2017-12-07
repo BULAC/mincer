@@ -47,5 +47,8 @@ debugrun:
 initdb:
 	FLASK_APP=mincer/__init__.py flask initdb
 
-loadsampledb:
-	FLASK_APP=mincer/__init__.py flask loadsampledb
+loadbulacdb:
+	FLASK_APP=mincer/__init__.py flask loadbulacdb
+
+loaddemodb:
+	FLASK_APP=mincer/__init__.py flask loaddemodb

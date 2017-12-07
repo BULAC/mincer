@@ -65,6 +65,40 @@ Le make file utilise l'outil `pipenv <https://github.com/kennethreitz/pipenv>`_ 
 
 Maintenant on a un environnement virtuel pour travailler.
 
+Initialiser la base de données
+------------------------------
+
+Il faut commencer par initialiser la base de donnée (creation des schema et chargement de la configuration de base :
+
+.. code-block:: bash
+
+	make initdb
+
+Puis si besoin on peut charger quelques providers d'exemple:
+
+.. code-block:: bash
+
+	make loadbulacdb
+
+Lancer le serveur Mincer
+------------------------
+
+On peut alors lancer le serveur Mincer :
+
+.. code-block:: bash
+
+	make prodrun
+
+On l'arrête par un simple Ctrl+C.
+
+On peut aussi le lancer en mode debug pendant le développement (celà permet de lancer une console python directement depuis le navigateur web en cas de problème ou de plantage) :
+
+.. code-block:: bash
+
+	make debugrun
+
+La lecture du fichier **Makefile** peut être très instructive pour voir les différentes possibilités offertes par Mincer ;)
+
 Guide d'utilisation
 ===================
 

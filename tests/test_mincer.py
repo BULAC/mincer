@@ -107,7 +107,7 @@ def client():
 @pytest.fixture
 def bulac_prov(tmp_db):
     """Add BULAC specific providers to the database."""
-    return mincer.load_sample_db()
+    return mincer.load_bulac_db()
 
 
 class TestWebInterface(object):
@@ -354,6 +354,7 @@ class TestWebInterface(object):
         # Do we have a button to validate the form ?
         assert has_form_submit_button(data)
 
+    @pytest.mark.xfail(reason="New provider not fully implemented.")
     def test_can_post_new_provider(self, client, tmp_db):
         SENT_DATA = {
             "name": "aaa",
@@ -368,6 +369,7 @@ class TestWebInterface(object):
         # We have an answer...
         assert response.status_code == OK
 
+    @pytest.mark.xfail(reason="New provider not fully implemented.")
     def test_post_new_provider_updates_database(self, client, tmp_db):
         SENT_DATA = {
             "name": "aaa",

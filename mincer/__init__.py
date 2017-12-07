@@ -207,26 +207,54 @@ def init_db():
     db.session.commit()
 
 
-def load_sample_db():
+def load_bulac_db():
     """Load some basic providers to the database for test purpose.
+
+    All these providers are from the BULAC enviromment.
 
     This function needs :function:`init_db` to be called first.
     """
     # Create the providers
-    koha_search = Provider(
-        name="koha search",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
-        result_selector="#userresults .searchresults",
-        no_result_selector=".span12 p",
-        no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
-    koha_booklist = Provider(
-        name="koha booklist",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-        result_selector="#usershelves .searchresults")
-
     providers = [
-        koha_search,
-        koha_booklist]
+        Provider(
+            name="koha search",
+            remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
+            result_selector="#userresults .searchresults",
+            no_result_selector=".span12 p",
+            no_result_content="Aucune réponse trouvée dans le catalogue BULAC."),
+        Provider(
+            name="koha booklist",
+            remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
+            result_selector="#usershelves .searchresults")
+    ]
+
+    # Add them to the database
+    db.session.add_all(providers)
+
+    # Commit the transaction
+    db.session.commit()
+
+    return providers
+
+
+def load_demo_db():
+    """Load some providers to the database for demo purpose.
+
+    These providers try to cover a large range of possible providers type.
+
+    This function needs :function:`init_db` to be called first.
+    """
+    # Create the providers
+    providers = [
+        Provider(
+            name="canard search",
+            remote_url="https://duckduckgo.com/html/?q={param}",
+            result_selector=".serp__results>.results#links"),
+        Provider(
+            name="theses search",
+            remote_url="http://www.theses.fr/?q={param}",
+            result_selector="#refreshzone #resultat")
+    ]
 
     # Add them to the database
     db.session.add_all(providers)
@@ -253,17 +281,31 @@ def initdb_command():
         print('*** Database initialized.')
 
 
-@app.cli.command('loadsampledb')
-def loadsampledb_command():
+@app.cli.command('loadbulacdb')
+def loadbulacdb_command():
     """Load some basic providers to the database via command line."""
     try:
-        load_sample_db()
+        load_bulac_db()
     except DatabaseError as e:
         print(e)
-        print('*** Sample providers NOT loaded!!!')
+        print('*** BULAC providers NOT loaded!!!')
         print('    > Did you initialize the database first?')
     else:
-        print('*** Sample providers loaded.')
+        print('*** BULAC providers loaded.')
+
+
+@app.cli.command('loaddemodb')
+def loadbulacdb_command():
+    """Load some perfectly suited providers for demo to the database via
+    command line."""
+    try:
+        load_demo_db()
+    except DatabaseError as e:
+        print(e)
+        print('*** Demo providers NOT loaded!!!')
+        print('    > Did you initialize the database first?')
+    else:
+        print('*** Demo providers loaded.')
 
 
 @app.errorhandler(sqlalchemy.exc.OperationalError)
@@ -572,7 +614,7 @@ def providers(provider_slug, param):
         return PyQuery(no_answer_div)\
             .add_class(HtmlClasses.NO_RESULT)\
             .outer_html()
-    except utils.NoMatchError:
+    except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(
             'Provider %s was asked for "%s" but neither result structure nor '
@@ -581,5 +623,6 @@ def providers(provider_slug, param):
             provider_slug,
             unquote_plus(param),
             full_remote_url)
+        raise e
         # TODO: replace this with a valide answer
         abort(BAD_REQUEST)
