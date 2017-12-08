@@ -18,7 +18,8 @@
 			name="Popper",
 			file_type="js",
 			res_dict=dependencies,
-			source="https://github.com/FezVrasta/popper.js#installation"|safe) }}
+			source="https://github.com/FezVrasta/popper.js#installation"|safe,
+			version_spec="(use the UMD version only)") }}
 
 		<h2>Bootstrap</h2>
 
@@ -26,13 +27,23 @@
 			name="Bootstrap",
 			file_type="js",
 			res_dict=dependencies,
-			source="https://www.bootstrapcdn.com/"|safe) }}
+			source="https://www.bootstrapcdn.com/"|safe,
+			version_spec="(use v4 only)") }}
 
 		{{ form.input_file_and_sha(
 			name="Bootstrap",
 			file_type="css",
 			res_dict=dependencies,
-			source="https://www.bootstrapcdn.com/"|safe) }}
+			source="https://www.bootstrapcdn.com/"|safe,
+			version_spec="(use v4 only)") }}
+
+		<h2>Font Awesome</h2>
+
+		{{ form.input_file_and_sha(
+			name="Font-Awesome",
+			file_type="css",
+			res_dict=dependencies,
+			source="https://www.bootstrapcdn.com/fontawesome/"|safe) }}
 
 		<button type="submit" class="btn btn-primary">Submit</button>
 	</form>

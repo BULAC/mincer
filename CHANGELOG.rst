@@ -5,6 +5,10 @@ CHANGELOG
 Branche develop
 ===============
 
+*	on peut ajouter des providers directement depuis l'interface web
+*	Les page d'exemple affichent maintenant leur résultat en pur AJAX ce qui peut servir de modèle pour écrire un client utilisant Mincer
+*	Des providers de démonstration peuvent maintenant être chargés dans la base de données. On a donc le choix entre charger des providers BULAC basic et/ou des providers de démo aux profils plus variés
+
 Version 1.3.0
 =============
 

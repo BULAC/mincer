@@ -2,14 +2,41 @@
 
 {% block content %}
 	<h2>Test provider</h2>
-	<form class="form-inline" action="/example/{{ provider.slug }}" method=post>
-		<input
-			id="search"
-			name="search"
-			class="form-control"
-			type="text"
-			placeholder="Your search terms to test this provider"
+	{# dynamic loading taken from : https://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery#12190482 #}
+	<form
+		class="form-row"
+		onsubmit="event.preventDefault(); $.ajax( {
+			method: 'POST',
+			url: '/example/{{ provider.slug }}',
+			data: $(this).serializeArray(),
+			beforeSend: function(){
+				$('#loading').show();
+			},
+			complete: function(){
+				$('#loading').hide();
+			}
+		}).done(function(response){
+			$('#search-result').html(response);
+		}).fail(function(response){
+			$('#search-result').html('Erreur'+response.responsetext);
+		});"
 		>
-		<button type="submit" class="btn btn-primary">Search</button>
+		<div class="input-group col-lg-8 offset-lg-2">
+			<input
+				id="search"
+				name="search"
+				class="form-control"
+				type="text"
+				placeholder="Your search terms to test this provider"
+			>
+			<span class="input-group-btn">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </span>
+		</div> <!-- input-group -->
 	</form>
+	<div id="loading" class="text-center" style="display: none">
+		<span class="fa fa-spinner fa-pulse fa-3x fa-fw\"></span>
+		<span class="sr-only">Loading...</span>
+	</div>
+	<div id="search-result"></div>
 {% endblock %}

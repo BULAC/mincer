@@ -1,0 +1,92 @@
+{% extends "default_page.html" %}
+
+{% import "forms.html" as form %}
+
+{% block content %}
+{% if provider is none %}
+	{% set name = "" %}
+	{% set slug = "" %}
+	{% set remote_url = "" %}
+	{% set result_selector = "" %}
+	{% set no_result_selector = "" %}
+	{% set no_result_content = "" %}
+	{% set readonly = false %}
+{% else %}
+	{% set name = provider.name %}
+	{% set slug = provider.slug %}
+	{% set remote_url = provider.remote_url %}
+	{% set result_selector = provider.result_selector %}
+	{% set no_result_selector = provider.no_result_selector %}
+	{% set no_result_content = provider.no_result_content %}
+	{% set readonly = true %}
+{% endif %}
+<section>
+	<form>
+		{{ form.input_provider_param(
+			name="name",
+			value=name,
+			help="This is the name you have given to this provider.",
+			readonly=readonly) }}
+
+{% if provider is not none %}
+		{{ form.input_provider_param(
+			name="slug",
+			value=slug,
+			help="Name of the provider as it can be used in the url of mincer.",
+			readonly=readonly) }}
+{% endif %}
+
+		{# TODO: use a type URL here #}
+		{{ form.input_provider_param(
+			name="remote url",
+			value=remote_url,
+			help="Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url."|safe,
+			readonly=readonly) }}
+
+		{{ form.input_provider_param(
+			name="result selector",
+			value=result_selector,
+			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the result list in the result page of the provider.'|safe,
+			readonly=readonly) }}
+
+		{{ form.input_provider_param(
+			name="no result selector",
+			value=no_result_selector,
+			help='Selector in the <a href="https://www.sitepoint.com/comprehensive-jquery-selectors/">JQuery selector syntax</a> to retrieve the no result message in the result page of the provider if no result were found.'|safe,
+			readonly=readonly) }}
+
+		{{ form.input_provider_param(
+			name="no result content",
+			value=no_result_content,
+			help='Text of the no result message we expect to find in the result page of the provider if no result were found.',
+			readonly=readonly) }}
+
+		{% if provider is none %}
+			<button
+				type="submit"
+				class="btn btn-primary"
+				formmethod=post
+				formaction="{{ url_for('provider') }}"
+			>
+				Ajouter
+			</button>
+		{% endif %}
+	</form>
+</section>
+
+{% if provider is not none %}
+	<section>
+		<h1>Utilities</h1>
+		<div class="container">
+			<div class="row">
+				<a
+				class="btn btn-outline-primary btn-lg col-sm"
+				role="button"
+				href="{{ url_for('example', provider_slug=provider.slug) }}">
+					Test this provider
+				</a>
+			</div> <!-- /.row -->
+		</div> <!-- /.container -->
+	</section>
+{% endif %}
+{% endblock %}

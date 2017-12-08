@@ -28,6 +28,8 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# import pdb
+
 # To decode form-encoded values
 from urllib.parse import unquote_plus
 
@@ -181,48 +183,80 @@ def init_db():
     db.session.commit()
 
     # Give valid defaults for dependencies
-    jquery = Dependency(
-        name="jquery-js",
-        url="https://code.jquery.com/jquery-3.2.1.slim.min.js",
-        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
-    popper = Dependency(
-        name="popper-js",
-        url="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js",
-        sha="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh")
-    bootstrapjs = Dependency(
-        name="bootstrap-js",
-        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js",
-        sha="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ")
-    bootstrapcss = Dependency(
-        name="bootstrap-css",
-        url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
-        sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb")
-
-    dependencies = [jquery, popper, bootstrapjs, bootstrapcss]
+    dependencies = [
+        Dependency(
+            name="jquery-js",
+            url="https://code.jquery.com/jquery-3.2.1.min.js",
+            sha="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="),
+        Dependency(
+            name="popper-js",
+            url="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.js",
+            sha="sha256-gR6ZCR2s8m5B2pOtRyDld7PWjHRqxSfLBMWYNs2TxOw="),
+        Dependency(
+            name="bootstrap-js",
+            url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js",
+            sha="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"),
+        Dependency(
+            name="bootstrap-css",
+            url="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
+            sha="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"),
+        Dependency(
+            name="font-awesome-css",
+            url="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css",
+            sha="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN")
+        ]
     db.session.add_all(dependencies)
     db.session.commit()
 
 
-def load_sample_db():
+def load_bulac_db():
     """Load some basic providers to the database for test purpose.
+
+    All these providers are from the BULAC enviromment.
 
     This function needs :function:`init_db` to be called first.
     """
     # Create the providers
-    koha_search = Provider(
-        name="koha search",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
-        result_selector="#userresults .searchresults",
-        no_result_selector=".span12 p",
-        no_result_content="Aucune réponse trouvée dans le catalogue BULAC.")
-    koha_booklist = Provider(
-        name="koha booklist",
-        remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-        result_selector="#usershelves .searchresults")
-
     providers = [
-        koha_search,
-        koha_booklist]
+        Provider(
+            name="koha search",
+            remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
+            result_selector="#userresults .searchresults",
+            no_result_selector=".span12 p",
+            no_result_content="Aucune réponse trouvée dans le catalogue BULAC."),
+        Provider(
+            name="koha booklist",
+            remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
+            result_selector="#usershelves .searchresults")
+    ]
+
+    # Add them to the database
+    db.session.add_all(providers)
+
+    # Commit the transaction
+    db.session.commit()
+
+    return providers
+
+
+def load_demo_db():
+    """Load some providers to the database for demo purpose.
+
+    These providers try to cover a large range of possible providers type.
+
+    This function needs :function:`init_db` to be called first.
+    """
+    # Create the providers
+    providers = [
+        Provider(
+            name="canard search",
+            remote_url="https://duckduckgo.com/html/?q={param}",
+            result_selector=".serp__results>.results#links"),
+        Provider(
+            name="theses search",
+            remote_url="http://www.theses.fr/?q={param}",
+            result_selector="#refreshzone #resultat")
+    ]
 
     # Add them to the database
     db.session.add_all(providers)
@@ -249,17 +283,31 @@ def initdb_command():
         print('*** Database initialized.')
 
 
-@app.cli.command('loadsampledb')
-def loadsampledb_command():
+@app.cli.command('loadbulacdb')
+def loadbulacdb_command():
     """Load some basic providers to the database via command line."""
     try:
-        load_sample_db()
+        load_bulac_db()
     except DatabaseError as e:
         print(e)
-        print('*** Sample providers NOT loaded!!!')
+        print('*** BULAC providers NOT loaded!!!')
         print('    > Did you initialize the database first?')
     else:
-        print('*** Sample providers loaded.')
+        print('*** BULAC providers loaded.')
+
+
+@app.cli.command('loaddemodb')
+def loadbulacdb_command():
+    """Load some perfectly suited providers for demo to the database via
+    command line."""
+    try:
+        load_demo_db()
+    except DatabaseError as e:
+        print(e)
+        print('*** Demo providers NOT loaded!!!')
+        print('    > Did you initialize the database first?')
+    else:
+        print('*** Demo providers loaded.')
 
 
 @app.errorhandler(sqlalchemy.exc.OperationalError)
@@ -326,7 +374,9 @@ def admin():
             "bootstrap-js",
             "bootstrap-js-sha",
             "bootstrap-css",
-            "bootstrap-css-sha"})
+            "bootstrap-css-sha",
+            "font-awesome-css",
+            "font-awesome-css-sha"})
         FORM_KEYS = frozenset([k for k in request.form.keys()])
         if ADMIN_KEYS != FORM_KEYS:
             app.logger.error(
@@ -382,16 +432,92 @@ def provider_status(provider_slug):
         abort(NOT_FOUND)
 
     return render_template(
-        "provider_status.html",
+        "provider.html",
         dependencies={e.name: e for e in Dependency.query.all()},
         provider=provider,
         title=provider.name,
         subtitle="Status report")
 
 
+@app.route("/provider/new")
+def provider_new():
+    return render_template(
+        "provider.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
+        provider=None,
+        title="Provider",
+        subtitle="Add a new provider")
+
+
+# TODO: merge this with providers()
+@app.route("/provider", methods=['POST'])
+def provider():
+    app.logger.info("I'm there")
+    # Check if we have only the correct keys from the form
+    PROVIDER_KEYS = frozenset({
+        "name",
+        "remote-url",
+        "result-selector",
+        "no-result-selector",
+        "no-result-content",
+        })
+    FORM_KEYS = frozenset([k for k in request.form.keys()])
+    app.logger.info("I'm there too")
+    if PROVIDER_KEYS != FORM_KEYS:
+        app.logger.error(
+            "Form data provided %s do not match"
+            " form data expected %s.",
+            FORM_KEYS,
+            PROVIDER_KEYS
+            )
+        return "toto", BAD_REQUEST
+
+    app.logger.info("I'm there toutou")
+    # TODO: check for errors
+    # TODO: check for existing provider with same name/slug
+
+    new_provider = Provider(
+        name=request.form["name"],
+        remote_url=request.form["remote-url"],
+        result_selector=request.form["result-selector"],
+        no_result_selector=request.form["no-result-selector"],
+        no_result_content=request.form["no-result-content"])
+
+    app.logger.info("I'm there woof")
+
+    # Add them to the database
+    db.session.add(new_provider)
+
+    # Commit the transaction
+    db.session.commit()
+
+    # TODO: send a message and display a result page
+    flash("Provider {name} added successfully!".format(
+        name=new_provider.name), "alert-success")
+
+    app.logger.info("I'm there wouaf")
+
+    return render_template(
+        "provider.html",
+        dependencies={e.name: e for e in Dependency.query.all()},
+        provider=new_provider,
+        title=new_provider.name,
+        subtitle="Status report")
+
+
 # TODO: test this !!!!
 @app.route("/example/<string:provider_slug>", methods=['GET', 'POST'])
 def example(provider_slug):
+    """
+    Display a search field to test the provider.
+
+    :query string provider_slug: slugified name of the provider to test as
+        registered in the database in the database.
+
+    :status 200: everything was ok
+
+    .. :quickref: Search; Search test.
+    """
     # Method POST
     if request.method == "POST":
         # Check if we have only the correct keys from the form
@@ -409,6 +535,7 @@ def example(provider_slug):
 
     # Retrieve the provider from database
     provider = Provider.query.filter(Provider.slug == provider_slug).first()
+    # Return the page with no search
     return render_template(
         "example.html",
         dependencies={e.name: e for e in Dependency.query.all()},
@@ -435,7 +562,7 @@ def providers(provider_slug, param):
     :status 200: everything was ok
     :status 404: when no `param` is provided
 
-    .. :quickref: Search; Retrieve search result list from KOHA
+    .. :quickref: Search; Extract search results from the provider
     """
     # Retrieve the provider from database
     provider = Provider.query.filter(Provider.slug == provider_slug).first()
@@ -488,7 +615,7 @@ def providers(provider_slug, param):
         return PyQuery(no_answer_div)\
             .add_class(HtmlClasses.NO_RESULT)\
             .outer_html()
-    except utils.NoMatchError:
+    except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(
             'Provider %s was asked for "%s" but neither result structure nor '
@@ -497,5 +624,6 @@ def providers(provider_slug, param):
             provider_slug,
             unquote_plus(param),
             full_remote_url)
+        raise e
         # TODO: replace this with a valide answer
         abort(BAD_REQUEST)

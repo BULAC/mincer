@@ -13,6 +13,12 @@
 		{{ prov.name|capitalize }}
 	</a>
 	{% endfor %}
+	<a
+		class="btn btn-outline-primary btn-lg btn-block"
+		role="button"
+		href="{{ url_for('provider_new') }}">
+		<i class="fa fa-plus-circle" aria-hidden="true"></i>Add a new provider
+	</a>
 </section>
 
 <section>

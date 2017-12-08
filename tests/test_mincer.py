@@ -41,6 +41,9 @@ try:
 except Exception as e:
     from http.client import OK, NOT_FOUND, BAD_REQUEST
 
+# To access real url
+from flask import url_for
+
 # Module we are going to test
 import mincer
 from mincer import Provider, Dependency
@@ -97,13 +100,14 @@ def tmp_db(tmp_db_uri):
 @pytest.fixture
 def client():
     """Returns a test client for the mincer Flask app."""
-    return mincer.app.test_client()
+    with mincer.app.app_context():
+        yield mincer.app.test_client()
 
 
 @pytest.fixture
 def bulac_prov(tmp_db):
     """Add BULAC specific providers to the database."""
-    return mincer.load_sample_db()
+    return mincer.load_bulac_db()
 
 
 class TestWebInterface(object):
@@ -127,17 +131,21 @@ class TestWebInterface(object):
         assert has_header_title(data, "Mincer")
         assert has_header_subtitle(data, "Home")
 
-        links = all_links(data)
+        with mincer.app.test_request_context('/'):
+            links = all_links(data)
 
-        # TODO: make this dynamic
-        # Test the presence of essenciel links
-        assert "/status/koha-search" in links
-        assert "/status/koha-booklist" in links
+            # Test the presence of essenciel links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-search") in links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-booklist") in links
+            assert url_for("provider_new") in links
 
-        # TODO: use url_for()
-        # Do we have admin links ?
-        assert "/status" in links
-        assert "/admin" in links
+            # Do we have admin links ?
+            assert url_for("status") in links
+            assert url_for("admin") in links
 
     def test_has_status_page(self, client, tmp_db, bulac_prov):
         response = client.get('/status')
@@ -164,9 +172,15 @@ class TestWebInterface(object):
         assert "Server responding?" in all_table_column_headers(data)
         assert "Correctly formed answer?" in all_table_column_headers(data)
 
-        # Test the presence of essencial links
-        assert "/status/koha-search" in all_links(data)
-        assert "/status/koha-booklist" in all_links(data)
+        with mincer.app.test_request_context('/status'):
+            links = all_links(data)
+            # Test the presence of essencial links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-search") in links
+            assert url_for(
+                "provider_status",
+                provider_slug="koha-booklist") in links
 
     def test_has_admin_page(self, client, tmp_db):
         response = client.get('/admin')
@@ -214,6 +228,11 @@ class TestWebInterface(object):
         assert form_groups["Bootstrap minified CSS SHA"]\
             == dependencies["bootstrap-css"].sha
 
+        assert form_groups["Font-Awesome minified CSS"]\
+            == dependencies["font-awesome-css"].url
+        assert form_groups["Font-Awesome minified CSS SHA"]\
+            == dependencies["font-awesome-css"].sha
+
         # Do we have a button to validate the form ?
         assert has_form_submit_button(data)
 
@@ -237,7 +256,9 @@ class TestWebInterface(object):
             "bootstrap-js": "eee",
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
-            "bootstrap-css-sha": "hhh"
+            "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj"
         }, OK, "Valid post"),
         ({
             "jquery-js": "aaa",
@@ -251,6 +272,8 @@ class TestWebInterface(object):
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
             "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj",
             "should-not-be-here": "oh no"
         }, BAD_REQUEST, "Unknown key")
         ])
@@ -270,6 +293,8 @@ class TestWebInterface(object):
             "bootstrap-js-sha": "fff",
             "bootstrap-css": "ggg",
             "bootstrap-css-sha": "hhh",
+            "font-awesome-css": "iii",
+            "font-awesome-css-sha": "jjj"
             }
         response = client.post('/admin', data=SENT_DATA)
 
@@ -293,6 +318,74 @@ class TestWebInterface(object):
         bootstrap_css = q.filter(Dependency.name == "bootstrap-css").one()
         assert bootstrap_css.url == SENT_DATA["bootstrap-css"]
         assert bootstrap_css.sha == SENT_DATA["bootstrap-css-sha"]
+
+    def test_has_new_provider_page(self, client, tmp_db):
+        response = client.get('/provider/new')
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # ...it's an HTML page
+        assert response.mimetype == "text/html"
+
+        # Let's convert it for easy inspection
+        data = response.get_data(as_text=True)
+
+        # Test if we recieved a full HTML page
+        assert is_html5_page(data)
+
+        assert has_page_title(data, "Provider Add a new provider")
+        assert has_header_title(data, "Provider")
+        assert has_header_subtitle(data, "Add a new provider")
+
+        assert has_form(data)
+
+        # Do we have the essential info in it
+        form_groups = all_form_groups(data)
+
+        assert form_groups["Name"] == ""
+        assert form_groups["Remote url"] == ""
+        assert form_groups["Result selector"] == ""
+        assert form_groups["No result selector"] == ""
+        assert form_groups["No result content"] == ""
+
+        # Do we have a button to validate the form ?
+        assert has_form_submit_button(data)
+
+    def test_can_post_new_provider(self, client, tmp_db):
+        SENT_DATA = {
+            "name": "aaa",
+            "remote-url": "bbb",
+            "result-selector": "ccc",
+            "no-result-selector": "ddd",
+            "no-result-content": "eee",
+            }
+        response = client.post('/provider', data=SENT_DATA)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+    def test_post_new_provider_updates_database(self, client, tmp_db):
+        SENT_DATA = {
+            "name": "aaa",
+            "remote-url": "bbb",
+            "result-selector": "ccc",
+            "no-result-selector": "ddd",
+            "no-result-content": "eee",
+            }
+        response = client.post('/provider', data=SENT_DATA)
+
+        # We have an answer...
+        assert response.status_code == OK
+
+        # Check database content
+        new = Provider.query.filter(Provider.name == SENT_DATA['name']).one()
+
+        assert new.name == SENT_DATA["name"]
+        assert new.remote_url == SENT_DATA["remote-url"]
+        assert new.result_selector == SENT_DATA["result-selector"]
+        assert new.no_result_selector == SENT_DATA["no-result-selector"]
+        assert new.no_result_content == SENT_DATA["no-result-content"]
 
     def test_return_not_found_for_inexistant_providers_status(self, client, tmp_db, bulac_prov):
         URL = "/status/dummy"
@@ -342,7 +435,7 @@ class TestGenericKohaSearch(object):
 
         assert form_groups["Name"] == "koha search"
         assert form_groups["Slug"] == "koha-search"
-        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
+        assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
         assert form_groups["Result selector"] == "#userresults .searchresults"
         assert form_groups["No result selector"] == ".span12 p"
         assert form_groups["No result content"] == "Aucune réponse trouvée dans le catalogue BULAC."
@@ -486,7 +579,7 @@ class TestGenericKohaBooklist(object):
 
         assert form_groups["Name"] == "koha booklist"
         assert form_groups["Slug"] == "koha-booklist"
-        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
+        assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
         assert form_groups["Result selector"] == "#usershelves .searchresults"
         assert form_groups["No result selector"] == ""
         assert form_groups["No result content"] == ""
@@ -678,7 +771,7 @@ class TestWithFakeProvider(object):
 
         assert form_groups["Name"] == "fake server"
         assert form_groups["Slug"] == "fake-server"
-        assert form_groups["Remote address"] == "http://0.0.0.0:5555/fake/{param}"
+        assert form_groups["Remote url"] == "http://0.0.0.0:5555/fake/{param}"
         assert form_groups["Result selector"] == ".result"
         assert form_groups["No result selector"] == ".noresult"
         assert form_groups["No result content"] == "no result"
