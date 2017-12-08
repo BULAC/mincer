@@ -28,6 +28,8 @@ __license__ = "GNU AGPL V3"
 # You should have received a copy of the GNU Affero General Public License
 # along with Mincer.  If not, see <http://www.gnu.org/licenses/>.
 
+# import pdb
+
 # To decode form-encoded values
 from urllib.parse import unquote_plus
 
@@ -454,8 +456,7 @@ def provider():
     # Check if we have only the correct keys from the form
     PROVIDER_KEYS = frozenset({
         "name",
-        "slug",  # TODO: Remove slug that should not appear in the form
-        "remote-address",
+        "remote-url",
         "result-selector",
         "no-result-selector",
         "no-result-content",
@@ -500,7 +501,7 @@ def provider():
         "provider.html",
         dependencies={e.name: e for e in Dependency.query.all()},
         provider=new_provider,
-        title=provider.name,
+        title=new_provider.name,
         subtitle="Status report")
 
 

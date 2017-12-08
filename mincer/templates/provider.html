@@ -28,15 +28,17 @@
 			help="This is the name you have given to this provider.",
 			readonly=readonly) }}
 
+{% if provider is not none %}
 		{{ form.input_provider_param(
 			name="slug",
 			value=slug,
 			help="Name of the provider as it can be used in the url of mincer.",
 			readonly=readonly) }}
+{% endif %}
 
 		{# TODO: use a type URL here #}
 		{{ form.input_provider_param(
-			name="remote address",
+			name="remote url",
 			value=remote_url,
 			help="Web address of the provider as if you were doing directly your search on his web site. You must replace the search terms by <code>{param}</code> in this url."|safe,
 			readonly=readonly) }}

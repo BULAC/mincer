@@ -344,9 +344,7 @@ class TestWebInterface(object):
         form_groups = all_form_groups(data)
 
         assert form_groups["Name"] == ""
-        # TODO: Remove slug that should not appear in the form at all
-        assert form_groups["Slug"] == ""
-        assert form_groups["Remote address"] == ""
+        assert form_groups["Remote url"] == ""
         assert form_groups["Result selector"] == ""
         assert form_groups["No result selector"] == ""
         assert form_groups["No result content"] == ""
@@ -354,30 +352,26 @@ class TestWebInterface(object):
         # Do we have a button to validate the form ?
         assert has_form_submit_button(data)
 
-    @pytest.mark.xfail(reason="New provider not fully implemented.")
     def test_can_post_new_provider(self, client, tmp_db):
         SENT_DATA = {
             "name": "aaa",
-            "slug": "bbb",
-            "remote-address": "ccc",
-            "result-selector": "ddd",
-            "no-result-selector": "eee",
-            "no-result-content": "fff",
+            "remote-url": "bbb",
+            "result-selector": "ccc",
+            "no-result-selector": "ddd",
+            "no-result-content": "eee",
             }
         response = client.post('/provider', data=SENT_DATA)
 
         # We have an answer...
         assert response.status_code == OK
 
-    @pytest.mark.xfail(reason="New provider not fully implemented.")
     def test_post_new_provider_updates_database(self, client, tmp_db):
         SENT_DATA = {
             "name": "aaa",
-            "slug": "bbb",
-            "remote-address": "ccc",
-            "result-selector": "ddd",
-            "no-result-selector": "eee",
-            "no-result-content": "fff",
+            "remote-url": "bbb",
+            "result-selector": "ccc",
+            "no-result-selector": "ddd",
+            "no-result-content": "eee",
             }
         response = client.post('/provider', data=SENT_DATA)
 
@@ -385,11 +379,10 @@ class TestWebInterface(object):
         assert response.status_code == OK
 
         # Check database content
-        new = Provider.query.filter(Provider.slug == SENT_DATA['slug']).one()
+        new = Provider.query.filter(Provider.name == SENT_DATA['name']).one()
 
         assert new.name == SENT_DATA["name"]
-        assert new.slug == SENT_DATA["slug"]
-        assert new.remote_address == SENT_DATA["remote-address"]
+        assert new.remote_url == SENT_DATA["remote-url"]
         assert new.result_selector == SENT_DATA["result-selector"]
         assert new.no_result_selector == SENT_DATA["no-result-selector"]
         assert new.no_result_content == SENT_DATA["no-result-content"]
@@ -442,7 +435,7 @@ class TestGenericKohaSearch(object):
 
         assert form_groups["Name"] == "koha search"
         assert form_groups["Slug"] == "koha-search"
-        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
+        assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
         assert form_groups["Result selector"] == "#userresults .searchresults"
         assert form_groups["No result selector"] == ".span12 p"
         assert form_groups["No result content"] == "Aucune réponse trouvée dans le catalogue BULAC."
@@ -586,7 +579,7 @@ class TestGenericKohaBooklist(object):
 
         assert form_groups["Name"] == "koha booklist"
         assert form_groups["Slug"] == "koha-booklist"
-        assert form_groups["Remote address"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
+        assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
         assert form_groups["Result selector"] == "#usershelves .searchresults"
         assert form_groups["No result selector"] == ""
         assert form_groups["No result content"] == ""
@@ -778,7 +771,7 @@ class TestWithFakeProvider(object):
 
         assert form_groups["Name"] == "fake server"
         assert form_groups["Slug"] == "fake-server"
-        assert form_groups["Remote address"] == "http://0.0.0.0:5555/fake/{param}"
+        assert form_groups["Remote url"] == "http://0.0.0.0:5555/fake/{param}"
         assert form_groups["Result selector"] == ".result"
         assert form_groups["No result selector"] == ".noresult"
         assert form_groups["No result content"] == "no result"
