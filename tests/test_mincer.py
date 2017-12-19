@@ -131,19 +131,33 @@ class TestWebInterface(object):
         assert has_header_title(data, "Mincer")
         assert has_header_subtitle(data, "Home")
 
+        # Test the presence of essenciel links
         with mincer.app.test_request_context('/'):
             links = all_links(data)
 
-            # Test the presence of essenciel links
+
+            # Do we have providers view links
             assert url_for(
                 "provider_status",
                 provider_slug="koha-search") in links
             assert url_for(
                 "provider_status",
                 provider_slug="koha-booklist") in links
+
+            # Do we have providers edit links?
+            assert url_for(
+                "providers",
+                provider_slug="koha-search") in links
+            assert url_for(
+                "providers",
+                provider_slug="koha-booklist") in links
+
+            # Do we have providers remove links?
+
+            # Do we have new provider link?
             assert url_for("provider_new") in links
 
-            # Do we have admin links ?
+            # Do we have admin links?
             assert url_for("status") in links
             assert url_for("admin") in links
 
