@@ -300,6 +300,76 @@ def has_form_submit_button(page):
     return submit_buttons != []
 
 
+def has_sub_div(partial):
+    """Helper function to detect if a partial has direct div child.
+
+    Params:
+        partial (str): an HTML partial to analyse it must be a div element.
+
+    Returns:
+        bool: True if the partial contains at least one `<div>` element as a
+            direct child,
+            False if not.
+
+    Examples:
+        >>> has_sub_div("<div><div></div></div>")
+        True
+
+        >>> has_sub_div("<div><div></div><div></div><div></div></div>")
+        True
+
+        >>> has_sub_div("<div></div>")
+        False
+
+        >>> has_sub_div("<section><div></div></section>")
+        False
+    """
+    d = PyQuery(partial)
+
+    if not d(":root").is_("div"):
+        return False
+
+    if d(":root>div") == []:
+        return False
+
+    return True
+
+
+def all_sub_div(partial):
+    """Helper function that returns all the direct sub div of the given partial.
+
+    Params:
+        partial (str): an HTML partial to analyse it must be a div element.
+
+    Returns:
+        list(str): List of the content of all the direct `div` child elements
+            in the partial.
+            Empty list if the root element is not a div or if not direct div child exist.
+
+    Examples:
+        >>> all_sub_div('<div></div>')
+        []
+
+        >>> all_sub_div('<section></section>')
+        []
+
+        >>> all_sub_div('<div><div>toto</div><div>titi</div></div>')
+        ['toto', 'titi']
+
+        >>> all_sub_div('<div><div>toto</div></div>')
+        ['toto']
+
+        >>> all_sub_div('<section><div>toto</div></section>')
+        []
+    """
+    d = PyQuery(partial)
+
+    if not d(":root").is_("div"):
+        return []
+
+    return [elem.text for elem in d(":root>div")]
+
+
 def all_table_column_headers(page):
     """Helper function that returns all table column headers.
 
