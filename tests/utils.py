@@ -354,10 +354,10 @@ def all_sub_div(partial):
         []
 
         >>> all_sub_div('<div><div>toto</div><div>titi</div></div>')
-        ['toto', 'titi']
+        ['<div>toto</div>', '<div>titi</div>']
 
         >>> all_sub_div('<div><div>toto</div></div>')
-        ['toto']
+        ['<div>toto</div>']
 
         >>> all_sub_div('<section><div>toto</div></section>')
         []
@@ -367,7 +367,7 @@ def all_sub_div(partial):
     if not d(":root").is_("div"):
         return []
 
-    return [elem.text for elem in d(":root>div")]
+    return [elem.outer_html() for elem in d.items(":root>div")]
 
 
 def all_table_column_headers(page):

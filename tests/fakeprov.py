@@ -23,8 +23,9 @@ app = Flask(__name__)
 def serve_any_query(query):
     clean_query = unquote_plus(query)
 
+    # TODO add a single result case
     if clean_query == "canary":
-        return '<div class="result">Pew Pew</div>', OK
+        return '<div class="result"><div>Pew Pew</div></div>', OK
     elif clean_query == "search with multiple results":
         return '<div class="result">'\
             '<div>Result number 1</div>'\

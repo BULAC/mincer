@@ -114,6 +114,9 @@ class HtmlClasses(object):
     """Class used to embed returned content when we have some results."""
     RESULT = "some-results"
 
+    """Class used to mark each result returned."""
+    RESULT_ITEM = "result-item"
+
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
 
@@ -587,22 +590,33 @@ def providers(provider_slug, param):
         full_remote_url,
         headers={'accept-language': 'fr-FR'}).text
 
-    try:
-        # Search for an answer in the page
-        answer_div = utils.extract_node_from_html(
-            selector=provider.result_selector,
-            html=page,
-            base_url=remote_host)
-        return PyQuery(answer_div)\
-            .add_class(HtmlClasses.RESULT)\
-            .outer_html()
-    except utils.NoMatchError:
-        app.logger.info(
-            'Provider %s was asked for "%s" but no result structure could be '
-            'found in it\'s result page. Now searching for a no result '
-            'structure...',
-            provider_slug,
-            unquote_plus(param))
+    # Search for an answer in the page
+    answer_divs = utils.extract_multi_node_from_html(
+        selector=provider.result_selector,
+        html=page,
+        base_url=remote_host)
+
+    if answer_divs:
+        # Let's build a result div
+        # Pyquery automatically add an enclosing div
+        # BUG if we have only one result this does not work
+        result = PyQuery('\n'.join(answer_divs))\
+            .add_class(HtmlClasses.RESULT)
+
+        # Add a class to each result element
+        for elem in result.items('div>*'):
+            elem.add_class(HtmlClasses.RESULT_ITEM)
+
+        return result.outer_html()
+
+    # We had no answer detectable, let's inform the user and search
+    # for a no answer pattern
+    app.logger.info(
+        'Provider %s was asked for "%s" but no result structure could be '
+        'found in it\'s result page. Now searching for a no result '
+        'structure...',
+        provider_slug,
+        unquote_plus(param))
 
     # TODO: test test the case where this fails for exemple if we have
     #   a "loading page"

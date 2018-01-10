@@ -61,6 +61,8 @@ from tests.utils import is_absolute_url
 from tests.utils import has_form
 from tests.utils import all_form_groups
 from tests.utils import has_form_submit_button
+from tests.utils import has_sub_div
+from tests.utils import all_sub_div
 
 # Test framework that helps you write better programs !
 import pytest
@@ -702,7 +704,7 @@ class TestWithFakeProvider(object):
         fake_provider = Provider(
             name="fake server",
             remote_url="http://0.0.0.0:5555/fake/{param}",
-            result_selector=".result",
+            result_selector=".result>div",
             no_result_selector=".noresult",
             no_result_content="no result")
 
@@ -711,6 +713,8 @@ class TestWithFakeProvider(object):
 
         # Commit the transaction
         mincer.db.session.commit()
+
+        return fake_provider
 
     def _build_url_from_query(self, query):
         BASE_URL = '/providers/fake-server/'
@@ -769,12 +773,12 @@ class TestWithFakeProvider(object):
 
         form_groups = all_form_groups(data)
 
-        assert form_groups["Name"] == "fake server"
-        assert form_groups["Slug"] == "fake-server"
-        assert form_groups["Remote url"] == "http://0.0.0.0:5555/fake/{param}"
-        assert form_groups["Result selector"] == ".result"
-        assert form_groups["No result selector"] == ".noresult"
-        assert form_groups["No result content"] == "no result"
+        assert form_groups["Name"] == fake_prov.name
+        assert form_groups["Slug"] == fake_prov.slug
+        assert form_groups["Remote url"] == fake_prov.remote_url
+        assert form_groups["Result selector"] == fake_prov.result_selector
+        assert form_groups["No result selector"] == fake_prov.no_result_selector
+        assert form_groups["No result content"] == fake_prov.no_result_content
 
     # TODO: change this behavior to have a valid response partial
     def test_return_404_error_if_no_query_provided(self, client, tmp_db, fake_serv, fake_prov):
@@ -826,10 +830,14 @@ class TestWithFakeProvider(object):
         # ...containing only a <div>
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
-        # And we have the correct books in it
-        assert "Result number 1" in data
-        assert "Result number 2" in data
-        assert "Result number 3" in data
+        # ...with many content div
+        assert has_sub_div(data)
+        data_items = all_sub_div(data)
+        for i, data_item in enumerate(data_items):
+            # Each item has a correct class
+            assert is_div(data_item, cls_name=mincer.HtmlClasses.RESULT_ITEM)
+            # Each item contains the good element
+            assert "Result number {num}".format(num=i+1) in data_item
 
     def test_search_works_with_unicode_query(self, client, tmp_db, fake_serv, fake_prov):
         # A query with some japanese

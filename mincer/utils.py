@@ -197,6 +197,53 @@ def extract_node_from_html(selector, html, base_url=''):
         .outerHtml()
 
 
+def extract_multi_node_from_html(selector, html, base_url=''):
+    """
+    Extract one div from a html document according to a JQuery selector.
+
+    The link in the returned partials can be optionnaly made absolute to a
+    given base url.
+
+    Arguments:
+        selector (str): a JQuery selector query that define how we select the
+            desired div in the document.
+        html (str): a string containing an HTML document.
+        base_url (str): an absolute url. If not ``''`` all links are made
+            absolute using this url as base.
+
+    Returns:
+        list(str): the selected divs as a listy of string or empty list if
+            nothing matches.
+
+    Examples:
+        >>> PAGE = '<!DOCTYPE html><html><div id="hop">hip</div></html>'
+        >>> extract_multi_node_from_html("#hop", PAGE)
+        ['<div id="hop">hip</div>']
+
+        >>> PAGE_NOMATCH = '<!DOCTYPE html><html><div id="nope">hip</div></html>'
+        >>> extract_multi_node_from_html("#hop", PAGE_NOMATCH)
+        []
+
+        >>> PAGE_LINK = '<!DOCTYPE html><html><div id="hop"><a href="relative.html">hip</a></div></html>'
+        >>> extract_multi_node_from_html("#hop", PAGE_LINK, "http://host.org/good/path/")
+        ['<div id="hop"><a href="http://host.org/good/path/relative.html">hip</a></div>']
+
+        >>> PAGE_MULTI = '<!DOCTYPE html><html><div class="hop">hip</div><div class="hop">hiphip</div></html>'
+        >>> extract_multi_node_from_html(".hop", PAGE_MULTI)
+        ['<div class="hop">hip</div>', '<div class="hop">hiphip</div>']
+    """
+
+    raw_q = PyQuery(html)
+
+    # Let's absolutify links if necessary
+    if base_url:
+        linked_q = raw_q.make_links_absolute(base_url)
+    else:
+        linked_q = raw_q
+
+    return [elem.outerHtml() for elem in linked_q.items(selector)]
+
+
 # Snippet taken from http://flask.pocoo.org/snippets/100/
 def add_response_headers(headers={}):
     """This decorator adds the headers passed in to the response."""
