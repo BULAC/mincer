@@ -7,9 +7,10 @@ name = "pypi"
 
 [dev-packages]
 
-pytest = "*"
+pytest = "==3.3.1"
 sphinxcontrib-httpdomain = "*"
 sphinx = "==1.5.6"
+pytest-bdd = "*"
 
 
 [packages]
