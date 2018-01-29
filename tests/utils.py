@@ -78,6 +78,52 @@ def is_div(partial, cls_name=None):
         return d.is_("div")
 
 
+def has_div_with_class(partial, class_name):
+    """Helper function to detect if a particular div with the specified class
+    is present in the partial.
+
+    Params:
+        partial (str): an HTML content (partial HTML code) page to test.
+        class_name (str): the name of the class that the div in `partial` must
+            have.
+
+    Returns:
+        bool: True if `partial` contains at least one div with the provided
+            class, False if not.
+
+    Examples:
+        It simply works:
+
+        >>> has_div_with_class('<div class="toto">Plop</div>', "toto")
+        True
+
+        It works with multiple matching div:
+
+        >>> has_div_with_class('<div class="toto">Plop</div><div class="toto">Plop2</div>', "toto")
+        True
+
+        It works even when the div is embedded in another one:
+
+        >>> has_div_with_class('<div><div class="toto">Plop</div></div>', "toto")
+        True
+
+        It doesn't work if the divs present don't match the requested class:
+
+        >>> has_div_with_class('<div class="prout">Plop</div>', "toto")
+        False
+
+        It deosn't work if the matching element is not a div:
+
+        >>> has_div_with_class('<span class="toto">Plop</span>', "toto")
+        False
+    """
+    d = PyQuery(partial)
+    if d("div.{cls_name}".format(cls_name=class_name)):
+        return True
+    else:
+        return False
+
+
 def has_page_title(page, title):
     """Helper function to detect if a page as a specific title defined in it's
     <head> section.
