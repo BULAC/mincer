@@ -193,6 +193,87 @@ def extract_node_from_html(selector, html, base_url=''):
         .outerHtml()
 
 
+def extract_all_node_from_html(selector, html, base_url=''):
+    """
+    Extract all divs from a html document according to a JQuery selector.
+
+    The link in the returned partials can be optionnaly made absolute to a
+    given base url.
+
+    Arguments:
+        selector (str): a JQuery selector query that define how we select the
+            desired divs in the document.
+        html (str): a string containing an HTML document.
+        base_url (str): an absolute url. If not ``''`` all links are made absolute using this
+            url as base.
+
+    Returns:
+        list(str): the selected divs as a list.
+
+    Raises:
+        NoMatchError: No div matched the selector query in the document.
+
+    Examples:
+        >>> PAGE = '<!DOCTYPE html><html><div id="hop">hip</div></html>'
+        >>> extract_all_node_from_html("#hop", PAGE)
+        ['<div id="hop">hip</div>']
+
+        >>> PAGE_LINK = '<!DOCTYPE html><html><div id="hop"><a href="relative.html">hip</a></div></html>'
+        >>> extract_all_node_from_html("#hop", PAGE_LINK, "http://host.org/good/path/")
+        ['<div id="hop"><a href="http://host.org/good/path/relative.html">hip</a></div>']
+
+        >>> PAGE_MULTI = '<!DOCTYPE html><html><div class="hop">hip</div><div class="hop">hiphip</div></html>'
+        >>> extract_all_node_from_html(".hop", PAGE_MULTI)
+        ['<div class="hop">hip</div>', '<div class="hop">hiphip</div>']
+    """
+
+    raw_q = PyQuery(html)
+    filtered_q = raw_q(selector)
+
+    # If the first match is empty (meaning no match at all)...
+    if not filtered_q.eq(0):
+        # ...then it's an error
+        raise NoMatchError()
+
+    if not base_url:
+        return [res.outerHtml() for res in filtered_q.items()]
+    else:
+        return [res.make_links_absolute(base_url).outerHtml()
+                for res in filtered_q.items()]
+
+
+def pack_divs(divs, wrapall_class, wrapitem_class):
+    """Join a list of div and wrap them in a surrounding div.
+
+    surrounding div will have the html class ``wrapall_class`` and the inner
+    divs will have the html class ``wrapitem_class``.
+
+    Arguments:
+        divs (list(str)): a list of string representing divs.
+        wrapall_class (str): HTML class to apply to the surrounding div.
+        wrapitem_class (str): HTML class to apply to the inner divs.
+
+    Returns:
+        str: a div containing all the provided divs.
+
+    Examples:
+        >>> DIVS = ['<div>a</div>', '<div>b</div>', '<div>c</div>']
+        >>> pack_divs(DIVS, 'outer', 'inner')
+        '<div class="outer">\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
+
+        >>> DIVS_INSIDE = ['<div>aaa<div>inside</div></div>']
+        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner')
+        '<div class="outer">\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
+    """
+    inner = [PyQuery(e).add_class(wrapitem_class).outer_html() for e in divs]
+
+    inner_block = '\n'.join(inner)
+
+    return '<div class="{wrapall_class}">\n{inner_block}\n</div>'.format(
+        wrapall_class=wrapall_class,
+        inner_block=inner_block)
+
+
 # Snippet taken from http://flask.pocoo.org/snippets/100/
 def add_response_headers(headers={}):
     """This decorator adds the headers passed in to the response."""
