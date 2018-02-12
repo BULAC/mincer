@@ -49,18 +49,20 @@ import mincer
 from mincer import Provider, Dependency
 
 # Helpers to analyse HTML contents
-from tests.utils import is_div
-from tests.utils import is_html5_page
-from tests.utils import has_page_title
-from tests.utils import has_header_title
-from tests.utils import has_header_subtitle
-from tests.utils import all_links
-from tests.utils import has_table
-from tests.utils import all_table_column_headers
-from tests.utils import is_absolute_url
-from tests.utils import has_form
-from tests.utils import all_form_groups
-from tests.utils import has_form_submit_button
+from tests.utils import (
+    is_div,
+    is_html5_page,
+    has_page_title,
+    has_header_title,
+    has_header_subtitle,
+    all_links,
+    has_table,
+    all_table_column_headers,
+    is_absolute_url,
+    has_form,
+    all_form_groups,
+    has_form_submit_button,
+    has_div_with_class)
 
 # Test framework that helps you write better programs !
 import pytest
@@ -840,6 +842,9 @@ class TestWithFakeProvider(object):
 
         # ...containing only a <div>
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+
+        # ...with many answer divs
+        assert has_div_with_class(data, cls_name=mincer.HtmlClasses.RESULT_ITEM)
 
         # And we have the correct books in it
         assert "Result number 1" in data

@@ -109,10 +109,14 @@ class HtmlClasses(object):
     """HTML classes used when generating returned HTML contents."""
 
     """Class used to embed returned content when we have no results."""
-    NO_RESULT = "no-result"
+    NO_RESULT = "mincer-no-result"
 
     """Class used to embed returned content when we have some results."""
-    RESULT = "some-results"
+    RESULT = "mincer-some-results"
+
+    """Class used to embed each individul result item in the returned content
+    when we have some results."""
+    RESULT_ITEM = "mincer-result-item"
 
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
@@ -221,13 +225,13 @@ def load_bulac_db():
         Provider(
             name="koha search",
             remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit=",
-            result_selector="#userresults .searchresults",
+            result_selector="#userresults .searchresults #bookbag_form table tr td.bibliocol",
             no_result_selector=".span12 p",
             no_result_content="Aucune réponse trouvée dans le catalogue BULAC."),
         Provider(
             name="koha booklist",
             remote_url="https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title",
-            result_selector="#usershelves .searchresults")
+            result_selector="#usershelves .searchresults table tr td:not(.select)")
     ]
 
     # Add them to the database
@@ -251,11 +255,11 @@ def load_demo_db():
         Provider(
             name="canard search",
             remote_url="https://duckduckgo.com/html/?q={param}",
-            result_selector=".serp__results>.results#links"),
+            result_selector="html body.body--html div div div.serp__results div#links.results div.result.results_links.results_links_deep.web-result div.links_main.links_deep.result__body"),
         Provider(
             name="theses search",
             remote_url="http://www.theses.fr/?q={param}",
-            result_selector="#refreshzone #resultat")
+            result_selector="html body div.conteneur div#refreshzone div#editzone div div#resultat div.encart.arrondi-10")
     ]
 
     # Add them to the database
@@ -589,20 +593,24 @@ def providers(provider_slug, param):
 
     try:
         # Search for an answer in the page
-        answer_div = utils.extract_node_from_html(
+        answer_divs = utils.extract_all_node_from_html(
             selector=provider.result_selector,
             html=page,
             base_url=remote_host)
-        return PyQuery(answer_div)\
-            .add_class(HtmlClasses.RESULT)\
-            .outer_html()
+        # Pack them in a surrounding answer div and return it
+        return utils.pack_divs(
+            divs=answer_divs,
+            wrapall_class=HtmlClasses.RESULT,
+            wrapitem_class=HtmlClasses.RESULT_ITEM)
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
-            'found in it\'s result page. Now searching for a no result '
+            'found in it\'s result page using matching expr "%s". Now searching for a no result '
             'structure...',
             provider_slug,
-            unquote_plus(param))
+            unquote_plus(param),
+            provider.result_selector)
+        # app.logger.debug(page)
 
     # TODO: test test the case where this fails for exemple if we have
     #   a "loading page"

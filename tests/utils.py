@@ -78,7 +78,7 @@ def is_div(partial, cls_name=None):
         return d.is_("div")
 
 
-def has_div_with_class(partial, class_name):
+def has_div_with_class(partial, cls_name):
     """Helper function to detect if a particular div with the specified class
     is present in the partial.
 
@@ -118,7 +118,7 @@ def has_div_with_class(partial, class_name):
         False
     """
     d = PyQuery(partial)
-    if d("div.{cls_name}".format(cls_name=class_name)):
+    if d("div.{cls_name}".format(cls_name=cls_name)):
         return True
     else:
         return False
