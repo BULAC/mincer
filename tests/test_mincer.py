@@ -61,6 +61,7 @@ from tests.utils import (
     is_absolute_url,
     has_form,
     all_form_groups,
+    all_div_content,
     has_form_submit_button,
     has_div_with_class)
 
@@ -489,9 +490,12 @@ class TestGenericKohaSearch(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Transafrique" in data
-        assert "L'amour a le goût des fraises" in data
-        assert "Les chemins de Mahjouba" in data
+        results = all_div_content(data, query="{surrounding} {item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "Transafrique" in results
+        assert "L'amour a le goût des fraises" in results
+        assert "Les chemins de Mahjouba" in results
 
     def test_search_works_with_unicode_query(self, client, tmp_db, bulac_prov):
         # This search returns only a few results (in japanese)
@@ -516,8 +520,11 @@ class TestGenericKohaSearch(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "新疆史志" in data
-        assert "永井龍男集" in data
+        results = all_div_content(data, query="{surrounding} {item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "新疆史志" in results
+        assert "永井龍男集" in results
 
     def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, bulac_prov):
         # This search returns absolutly no result
@@ -633,13 +640,16 @@ class TestGenericKohaBooklist(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Africa in Russia, Russia in Africa" in data
-        assert "Cahiers d'études africaines" in data
-        assert "Étudier à l'Est" in data
-        assert "Forced labour in colonial Africa" in data
-        assert "Le gel" in data
-        assert "Revue européenne des migrations internationales" in data
-        assert "The Cold War in the Third World" in data
+        results = all_div_content(data, query="{surrounding} {item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "Africa in Russia, Russia in Africa" in results
+        assert "Cahiers d'études africaines" in results
+        assert "Étudier à l'Est" in results
+        assert "Forced labour in colonial Africa" in results
+        assert "Le gel" in results
+        assert "Revue européenne des migrations internationales" in results
+        assert "The Cold War in the Third World" in results
 
     def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
         # We are using the ID of of an existing list
@@ -847,9 +857,12 @@ class TestWithFakeProvider(object):
         assert has_div_with_class(data, cls_name=mincer.HtmlClasses.RESULT_ITEM)
 
         # And we have the correct books in it
-        assert "Result number 1" in data
-        assert "Result number 2" in data
-        assert "Result number 3" in data
+        results = all_div_content(data, query="{surrounding} {item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "Result number 1" in results
+        assert "Result number 2" in results
+        assert "Result number 3" in results
 
     def test_search_works_with_unicode_query(self, client, tmp_db, fake_serv, fake_prov):
         # A query with some japanese
@@ -873,8 +886,11 @@ class TestWithFakeProvider(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Result with japanese 新疆史志" in data
-        assert "Result with japanese 永井龍男集" in data
+        results = all_div_content(data, query="{surrounding} {item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "Result with japanese 新疆史志" in results
+        assert "Result with japanese 永井龍男集" in results
 
     def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
         QUERY = "search without result"
