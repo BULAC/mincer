@@ -25,24 +25,24 @@ def serve_any_query(query):
 
     # TODO add a single result case
     if clean_query == "canary":
-        return '<div class="result"><div>Pew Pew</div></div>', OK
+        return '<div class="result"><div class="item">Pew Pew</div></div>', OK
     elif clean_query == "search with multiple results":
         return '<div class="result">'\
-            '<div>Result number 1</div>'\
-            '<div>Result number 2</div>'\
-            '<div>Result number 3</div>'\
+            '<div class="item">Result number 1</div>'\
+            '<div class="item">Result number 2</div>'\
+            '<div class="item">Result number 3</div>'\
             '</div>', OK
     elif clean_query == "search with links":
         return '<div class="result">'\
-            '<div><a href="/some/doc.html">1st link</a></div>'\
-            '<div><a href="/some/place">2nd link</a></div>'\
-            '<div><a href="/some/dir/">3rd link</a></div>'\
-            '<div><a href="some/direct/link">4th link</a></div>'\
+            '<div class="item"><a href="/some/doc.html">1st link</a></div>'\
+            '<div class="item"><a href="/some/place">2nd link</a></div>'\
+            '<div class="item"><a href="/some/dir/">3rd link</a></div>'\
+            '<div class="item"><a href="some/direct/link">4th link</a></div>'\
             '</div>', OK
     elif clean_query == "search with unicode 龍 車 日":
         return '<div class="result">'\
-            '<div>Result with japanese 新疆史志</div>'\
-            '<div>Result with japanese 永井龍男集</div>'\
+            '<div class="item">Result with japanese 新疆史志</div>'\
+            '<div class="item">Result with japanese 永井龍男集</div>'\
             '</div>', OK
     elif clean_query == "search without result":
         return '<div class="noresult">'\

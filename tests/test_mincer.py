@@ -49,20 +49,22 @@ import mincer
 from mincer import Provider, Dependency
 
 # Helpers to analyse HTML contents
-from tests.utils import is_div
-from tests.utils import is_html5_page
-from tests.utils import has_page_title
-from tests.utils import has_header_title
-from tests.utils import has_header_subtitle
-from tests.utils import all_links
-from tests.utils import has_table
-from tests.utils import all_table_column_headers
-from tests.utils import is_absolute_url
-from tests.utils import has_form
-from tests.utils import all_form_groups
-from tests.utils import has_form_submit_button
-from tests.utils import has_sub_div
-from tests.utils import all_sub_div
+from tests.utils import (
+    is_div,
+    is_html5_page,
+    has_page_title,
+    has_header_title,
+    has_header_subtitle,
+    all_links,
+    has_table,
+    all_table_column_headers,
+    is_absolute_url,
+    has_form,
+    all_form_groups,
+    all_div_content,
+    has_form_submit_button,
+    has_div_with_class,
+    is_substring_in)
 
 # Test framework that helps you write better programs !
 import pytest
@@ -146,13 +148,14 @@ class TestWebInterface(object):
                 "provider_status",
                 provider_slug="koha-booklist") in links
 
-            # Do we have providers edit links?
-            assert url_for(
-                "providers",
-                provider_slug="koha-search") in links
-            assert url_for(
-                "providers",
-                provider_slug="koha-booklist") in links
+            # TODO add direct link to edit provider
+            # # Do we have providers edit links?
+            # assert url_for(
+            #     "providers",
+            #     provider_slug="koha-search") in links
+            # assert url_for(
+            #     "providers",
+            #     provider_slug="koha-booklist") in links
 
             # Do we have providers remove links?
 
@@ -452,7 +455,7 @@ class TestGenericKohaSearch(object):
         assert form_groups["Name"] == "koha search"
         assert form_groups["Slug"] == "koha-search"
         assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-search.pl?idx=&q={param}&branch_group_limit="
-        assert form_groups["Result selector"] == "#userresults .searchresults"
+        assert form_groups["Result selector"] == "#userresults .searchresults #bookbag_form table tr td.bibliocol"
         assert form_groups["No result selector"] == ".span12 p"
         assert form_groups["No result content"] == "Aucune réponse trouvée dans le catalogue BULAC."
 
@@ -488,9 +491,12 @@ class TestGenericKohaSearch(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Transafrique" in data
-        assert "L'amour a le goût des fraises" in data
-        assert "Les chemins de Mahjouba" in data
+        results = all_div_content(
+            data,
+            query=mincer.HtmlClasses.result_item_query())
+        assert is_substring_in("Transafrique", results)
+        assert is_substring_in("L'amour a le goût des fraises", results)
+        assert is_substring_in("Les chemins de Mahjouba", results)
 
     def test_search_works_with_unicode_query(self, client, tmp_db, bulac_prov):
         # This search returns only a few results (in japanese)
@@ -515,8 +521,11 @@ class TestGenericKohaSearch(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "新疆史志" in data
-        assert "永井龍男集" in data
+        results = all_div_content(
+            data,
+            query=mincer.HtmlClasses.result_item_query())
+        assert is_substring_in("新疆史志", results)
+        assert is_substring_in("永井龍男集", results)
 
     def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, bulac_prov):
         # This search returns absolutly no result
@@ -596,7 +605,7 @@ class TestGenericKohaBooklist(object):
         assert form_groups["Name"] == "koha booklist"
         assert form_groups["Slug"] == "koha-booklist"
         assert form_groups["Remote url"] == "https://koha.bulac.fr/cgi-bin/koha/opac-shelves.pl?op=view&shelfnumber={param}&sortfield=title"
-        assert form_groups["Result selector"] == "#usershelves .searchresults"
+        assert form_groups["Result selector"] == "#usershelves .searchresults table tr td:not(.select)"
         assert form_groups["No result selector"] == ""
         assert form_groups["No result content"] == ""
 
@@ -632,13 +641,16 @@ class TestGenericKohaBooklist(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Africa in Russia, Russia in Africa" in data
-        assert "Cahiers d'études africaines" in data
-        assert "Étudier à l'Est" in data
-        assert "Forced labour in colonial Africa" in data
-        assert "Le gel" in data
-        assert "Revue européenne des migrations internationales" in data
-        assert "The Cold War in the Third World" in data
+        results = all_div_content(
+            data,
+            query=mincer.HtmlClasses.result_item_query())
+        assert is_substring_in("Africa in Russia, Russia in Africa", results)
+        assert is_substring_in("Cahiers d'études africaines", results)
+        assert is_substring_in("Étudier à l'Est", results)
+        assert is_substring_in("Forced labour in colonial Africa", results)
+        assert is_substring_in("Le gel", results)
+        assert is_substring_in("Revue européenne des migrations internationales", results)
+        assert is_substring_in("The Cold War in the Third World", results)
 
     def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
         # We are using the ID of of an existing list
@@ -718,7 +730,7 @@ class TestWithFakeProvider(object):
         fake_provider = Provider(
             name="fake server",
             remote_url="http://0.0.0.0:5555/fake/{param}",
-            result_selector=".result>div",
+            result_selector=".result .item",
             no_result_selector=".noresult",
             no_result_content="no result")
 
@@ -844,14 +856,18 @@ class TestWithFakeProvider(object):
         # ...containing only a <div>
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
-        # ...with many content div
-        assert has_sub_div(data)
-        data_items = all_sub_div(data)
-        for i, data_item in enumerate(data_items):
-            # Each item has a correct class
-            assert is_div(data_item, cls_name=mincer.HtmlClasses.RESULT_ITEM)
-            # Each item contains the good element
-            assert "Result number {num}".format(num=i+1) in data_item
+        # ...with many answer divs
+        assert has_div_with_class(
+            data,
+            cls_name=mincer.HtmlClasses.RESULT_ITEM)
+
+        # And we have the correct books in it
+        results = all_div_content(
+            data,
+            query=mincer.HtmlClasses.result_item_query())
+        assert "Result number 1" in results
+        assert "Result number 2" in results
+        assert "Result number 3" in results
 
     def test_search_works_with_unicode_query(self, client, tmp_db, fake_serv, fake_prov):
         # A query with some japanese
@@ -875,8 +891,11 @@ class TestWithFakeProvider(object):
         assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
 
         # And we have the correct books in it
-        assert "Result with japanese 新疆史志" in data
-        assert "Result with japanese 永井龍男集" in data
+        results = all_div_content(data, query=".{surrounding} .{item}".format(
+            surrounding=mincer.HtmlClasses.RESULT,
+            item=mincer.HtmlClasses.RESULT_ITEM))
+        assert "Result with japanese 新疆史志" in results
+        assert "Result with japanese 永井龍男集" in results
 
     def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
         QUERY = "search without result"
