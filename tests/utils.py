@@ -400,6 +400,64 @@ def all_form_groups(page):
     return res
 
 
+def all_div_content(page, query):
+    """Helper function that returns all div content matching the provided
+    ``query``.
+
+    Params:
+        page (str): an HTML page to analyse.
+        query (str): a jQuery query describing the divs to match.
+
+    Returns:
+        list(str): List of all the content of the matched divs.
+
+    Examples:
+        >>> SIMPLE_PAGE = '''<html>
+        ...   <body>
+        ...     <div class="simple">toto</div>
+        ...   </body>
+        ... </html>'''
+        >>> all_div_content(SIMPLE_PAGE, '.simple')
+        ['toto']
+        >>> all_div_content(SIMPLE_PAGE, '.other')
+        []
+        >>> all_div_content(SIMPLE_PAGE, '')
+        Traceback (most recent call last):
+          ...
+        AssertionError: parameter 'query' can not be empty
+
+        >>> MULTI_PAGE = '''<html>
+        ...   <body>
+        ...     <div class="multi">toto</div>
+        ...     <div class="multi">tata</div>
+        ...   </body>
+        ... </html>'''
+        >>> all_div_content(MULTI_PAGE, '.multi')
+        ['toto', 'tata']
+
+        >>> NESTED_PAGE = '''<html>
+        ...   <body>
+        ...     <div class="nestor">
+        ...       <div class="nested">toto</div>
+        ...       <div class="nested">tata</div>
+        ...     </div>
+        ...   </body>
+        ... </html>'''
+        >>> all_div_content(NESTED_PAGE, '.nestor>.nested')
+        ['toto', 'tata']
+    """
+    assert query != '', "parameter 'query' can not be empty"
+
+    d = PyQuery(page)
+
+    matched = d(query)
+
+    if matched.eq(0) == []:
+        return []
+    else:
+        return [e.html() for e in matched.items()]
+
+
 def is_absolute_url(url):
     """Helper function that tells whether or not a given url is absolute.
 
@@ -429,3 +487,35 @@ def is_absolute_url(url):
         False
     """
     return urlparse(url).netloc != ''
+
+
+def is_substring_in(txt, lst):
+    """Helper function that search for a substring in all the element of a list.
+
+    Params:
+        txt (str): String to search for.
+        lst (list(str)): List of string in which to search.
+
+    Returns:
+        bool: True if ``txt`` is a substring of at least one of the ``lst``
+            elements.
+
+    Examples:
+        >>> THE_LIST = ['aa bb cc','11 22 33']
+
+        >>> is_substring_in('bb', THE_LIST)
+        True
+
+        >>> is_substring_in('22', THE_LIST)
+        True
+
+        >>> is_substring_in('aa bb cc', THE_LIST)
+        True
+
+        >>> is_substring_in('dd', THE_LIST)
+        False
+
+        >>> is_substring_in('bb', [])
+        False
+    """
+    return any(txt in e for e in lst)

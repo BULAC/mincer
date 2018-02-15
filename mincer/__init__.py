@@ -111,12 +111,26 @@ class HtmlClasses(object):
     """Class used to embed returned content when we have no results."""
     NO_RESULT = "mincer-no-result"
 
+    @staticmethod
+    def no_result_query():
+        return ".{cls}".format(cls=HtmlClasses.NO_RESULT)
+
     """Class used to embed returned content when we have some results."""
     RESULT = "mincer-some-results"
+
+    @staticmethod
+    def result_query():
+        return ".{cls}".format(cls=HtmlClasses.RESULT)
 
     """Class used to embed each individul result item in the returned content
     when we have some results."""
     RESULT_ITEM = "mincer-result-item"
+
+    @staticmethod
+    def result_item_query():
+        return ".{cls_out}>.{cls_in}".format(
+            cls_out=HtmlClasses.RESULT,
+            cls_in=HtmlClasses.RESULT_ITEM)
 
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
