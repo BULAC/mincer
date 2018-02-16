@@ -50,10 +50,12 @@ def is_div(partial, cls_name=None, id_name=None):
         partial (str): an HTML content (partial HTML code) page to test.
         class_name (str|None): if not `None` the name of the class that the div
             in `partial` must have.
+        id_name (str|None): if not `None` the name of the id that the div
+            in `partial` must have.
 
     Returns:
         bool: True if `partial` is a well formated div page with the provided
-            class (if provided), False if not.
+            class (if provided) and id (if provided), False if not.
 
     Examples:
         >>> is_div("<div>Plop</div>")
