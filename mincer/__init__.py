@@ -132,6 +132,15 @@ class HtmlClasses(object):
             cls_out=HtmlClasses.RESULT,
             cls_in=HtmlClasses.RESULT_ITEM)
 
+    """Class used to embed provider name."""
+    PROVIDER = "mincer-provider"
+
+    @staticmethod
+    def provider_query():
+        return ".{cls_out}>.{cls_prov}".format(
+            cls_out=HtmlClasses.RESULT,
+            cls_prov=HtmlClasses.PROVIDER)
+
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
 
@@ -615,7 +624,8 @@ def providers(provider_slug, param):
         return utils.pack_divs(
             divs=answer_divs,
             wrapall_class=HtmlClasses.RESULT,
-            wrapitem_class=HtmlClasses.RESULT_ITEM)
+            wrapitem_class=HtmlClasses.RESULT_ITEM,
+            provider=provider)
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '

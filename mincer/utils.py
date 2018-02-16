@@ -242,7 +242,7 @@ def extract_all_node_from_html(selector, html, base_url=''):
                 for res in filtered_q.items()]
 
 
-def pack_divs(divs, wrapall_class, wrapitem_class, wrapall_id=None):
+def pack_divs(divs, wrapall_class, wrapitem_class, provider=None):
     """Join a list of div and wrap them in a surrounding div.
 
     surrounding div will have the html class ``wrapall_class`` and the inner
@@ -252,38 +252,46 @@ def pack_divs(divs, wrapall_class, wrapitem_class, wrapall_id=None):
         divs (list(str)): a list of string representing divs.
         wrapall_class (str): HTML class to apply to the surrounding div.
         wrapitem_class (str): HTML class to apply to the inner divs.
-        wrapall_id (str): HTML id to apply to the srrounding div.
+        provider (Mincer.Provider): the search provider used to get the result.
 
     Returns:
-        str: a div containing all the provided divs.
+        str: a div containing all the result items as divs with correct classes
+            and id and a special subdiv containing the provider name.
 
     Examples:
+        >>> from mincer import Provider
+        >>> PROV = Provider(
+        ...     name="cat",
+        ...     remote_url="http://meow.org",
+        ...     result_selector="",
+        ...     no_result_selector="",
+        ...     no_result_content="")
+
         >>> DIVS = ['<div>a</div>', '<div>b</div>', '<div>c</div>']
-        >>> pack_divs(DIVS, 'outer', 'inner')
-        '<div class="outer">\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
-        >>> pack_divs(DIVS, 'outer', 'inner', wrapall_id='cat')
-        '<div class="outer" id="cat">\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
+        >>> pack_divs(DIVS, 'outer', 'inner', provider=PROV)
+        '<div class="outer" id="cat">\\n<div class="mincer-provider">cat</div>\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
+        >>> pack_divs(DIVS, 'outer', 'inner', provider=PROV)
+        '<div class="outer" id="cat">\\n<div class="mincer-provider">cat</div>\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
 
         >>> DIVS_INSIDE = ['<div>aaa<div>inside</div></div>']
-        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner')
-        '<div class="outer">\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
-        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner', wrapall_id='cat')
-        '<div class="outer" id="cat">\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
+        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner', provider=PROV)
+        '<div class="outer" id="cat">\\n<div class="mincer-provider">cat</div>\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
+        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner', provider=PROV)
+        '<div class="outer" id="cat">\\n<div class="mincer-provider">cat</div>\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
 
     """
     inner = [PyQuery(e).add_class(wrapitem_class).outer_html() for e in divs]
 
     inner_block = '\n'.join(inner)
 
-    if wrapall_id:
-        return '<div class="{wrapall_class}" id="{wrapall_id}">\n{inner_block}\n</div>'.format(
-            wrapall_class=wrapall_class,
-            wrapall_id=wrapall_id,
-            inner_block=inner_block)
-    else:
-        return '<div class="{wrapall_class}">\n{inner_block}\n</div>'.format(
-            wrapall_class=wrapall_class,
-            inner_block=inner_block)
+    return '''<div class="{wrapall_class}" id="{prov_slug}">
+<div class="mincer-provider">{prov_name}</div>
+{inner_block}
+</div>'''.format(
+        wrapall_class=wrapall_class,
+        prov_slug=provider.slug,
+        prov_name=provider.name,
+        inner_block=inner_block)
 
 
 # Snippet taken from http://flask.pocoo.org/snippets/100/

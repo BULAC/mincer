@@ -46,7 +46,10 @@ from flask import url_for
 
 # Module we are going to test
 import mincer
-from mincer import Provider, Dependency
+from mincer import (
+    Provider,
+    Dependency,
+    HtmlClasses)
 
 # Helpers to analyse HTML contents
 from tests.utils import (
@@ -487,13 +490,21 @@ class TestGenericKohaSearch(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # TODO add this new assert to the other query related tests
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name="koha-search")
+
+        # TODO add this new assert to the other query related tests
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("Transafrique", results)
         assert is_substring_in("L'amour a le goût des fraises", results)
         assert is_substring_in("Les chemins de Mahjouba", results)
@@ -518,12 +529,12 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        assert is_div(data, cls_name=HtmlClasses.RESULT)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("新疆史志", results)
         assert is_substring_in("永井龍男集", results)
 
@@ -547,7 +558,7 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)
+        assert is_div(data, cls_name=HtmlClasses.NO_RESULT)
 
     def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
         # This search returns only a few results
@@ -638,12 +649,12 @@ class TestGenericKohaBooklist(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        assert is_div(data, cls_name=HtmlClasses.RESULT)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("Africa in Russia, Russia in Africa", results)
         assert is_substring_in("Cahiers d'études africaines", results)
         assert is_substring_in("Étudier à l'Est", results)
@@ -739,6 +750,8 @@ class TestWithFakeProvider(object):
 
         # Commit the transaction
         mincer.db.session.commit()
+
+        return fake_provider
 
     def _build_url_from_query(self, query):
         BASE_URL = '/providers/fake-server/'
@@ -851,18 +864,26 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name
 
         # ...with many answer divs
         assert has_div_with_class(
             data,
-            cls_name=mincer.HtmlClasses.RESULT_ITEM)
+            cls_name=HtmlClasses.RESULT_ITEM)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert "Result number 1" in results
         assert "Result number 2" in results
         assert "Result number 3" in results
@@ -885,13 +906,21 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name
 
         # And we have the correct books in it
         results = all_div_content(data, query=".{surrounding} .{item}".format(
-            surrounding=mincer.HtmlClasses.RESULT,
-            item=mincer.HtmlClasses.RESULT_ITEM))
+            surrounding=HtmlClasses.RESULT,
+            item=HtmlClasses.RESULT_ITEM))
         assert "Result with japanese 新疆史志" in results
         assert "Result with japanese 永井龍男集" in results
 
@@ -912,5 +941,13 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.NO_RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name
