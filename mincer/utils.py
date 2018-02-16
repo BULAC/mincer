@@ -242,7 +242,7 @@ def extract_all_node_from_html(selector, html, base_url=''):
                 for res in filtered_q.items()]
 
 
-def pack_divs(divs, wrapall_class, wrapitem_class):
+def pack_divs(divs, wrapall_class, wrapitem_class, wrapall_id=None):
     """Join a list of div and wrap them in a surrounding div.
 
     surrounding div will have the html class ``wrapall_class`` and the inner
@@ -252,6 +252,7 @@ def pack_divs(divs, wrapall_class, wrapitem_class):
         divs (list(str)): a list of string representing divs.
         wrapall_class (str): HTML class to apply to the surrounding div.
         wrapitem_class (str): HTML class to apply to the inner divs.
+        wrapall_id (str): HTML id to apply to the srrounding div.
 
     Returns:
         str: a div containing all the provided divs.
@@ -260,18 +261,29 @@ def pack_divs(divs, wrapall_class, wrapitem_class):
         >>> DIVS = ['<div>a</div>', '<div>b</div>', '<div>c</div>']
         >>> pack_divs(DIVS, 'outer', 'inner')
         '<div class="outer">\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
+        >>> pack_divs(DIVS, 'outer', 'inner', wrapall_id='cat')
+        '<div class="outer" id="cat">\\n<div class="inner">a</div>\\n<div class="inner">b</div>\\n<div class="inner">c</div>\\n</div>'
 
         >>> DIVS_INSIDE = ['<div>aaa<div>inside</div></div>']
         >>> pack_divs(DIVS_INSIDE, 'outer', 'inner')
         '<div class="outer">\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
+        >>> pack_divs(DIVS_INSIDE, 'outer', 'inner', wrapall_id='cat')
+        '<div class="outer" id="cat">\\n<div class="inner">aaa<div>inside</div></div>\\n</div>'
+
     """
     inner = [PyQuery(e).add_class(wrapitem_class).outer_html() for e in divs]
 
     inner_block = '\n'.join(inner)
 
-    return '<div class="{wrapall_class}">\n{inner_block}\n</div>'.format(
-        wrapall_class=wrapall_class,
-        inner_block=inner_block)
+    if wrapall_id:
+        return '<div class="{wrapall_class}" id="{wrapall_id}">\n{inner_block}\n</div>'.format(
+            wrapall_class=wrapall_class,
+            wrapall_id=wrapall_id,
+            inner_block=inner_block)
+    else:
+        return '<div class="{wrapall_class}">\n{inner_block}\n</div>'.format(
+            wrapall_class=wrapall_class,
+            inner_block=inner_block)
 
 
 # Snippet taken from http://flask.pocoo.org/snippets/100/
