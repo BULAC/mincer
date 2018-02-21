@@ -46,7 +46,10 @@ from flask import url_for
 
 # Module we are going to test
 import mincer
-from mincer import Provider, Dependency
+from mincer import (
+    Provider,
+    Dependency,
+    HtmlClasses)
 
 # Helpers to analyse HTML contents
 from tests.utils import (
@@ -418,6 +421,10 @@ class TestWebInterface(object):
 # TODO: Add test for inefficient search selector: no result
 @bulac_test_only
 class TestGenericKohaSearch(object):
+    @pytest.fixture
+    def koha_search_prov(bulac_prov):
+        return bulac_prov['koha-search']
+
     def _build_url(self, param):
         BASE_URL = '/providers/koha-search/'
 
@@ -427,7 +434,7 @@ class TestGenericKohaSearch(object):
 
         return url
 
-    def test_koha_search_is_a_provider(self, client, tmp_db, bulac_prov):
+    def test_koha_search_is_a_provider(self, client, tmp_db, koha_search_prov):
         URL = '/status/koha-search'
         response = client.get(URL)
 
@@ -459,7 +466,7 @@ class TestGenericKohaSearch(object):
         assert form_groups["No result selector"] == ".span12 p"
         assert form_groups["No result content"] == "Aucune réponse trouvée dans le catalogue BULAC."
 
-    def test_return_error_page_with_empty_query(self, client, tmp_db, bulac_prov):
+    def test_return_error_page_with_empty_query(self, client, tmp_db, koha_search_prov):
         SEARCH_QUERY = ''
 
         url = self._build_url(SEARCH_QUERY)
@@ -468,7 +475,7 @@ class TestGenericKohaSearch(object):
         # We have an answer...
         assert response.status_code == NOT_FOUND
 
-    def test_search_works(self, client, tmp_db, bulac_prov):
+    def test_search_works(self, client, tmp_db, koha_search_prov):
         # This search returns only a few results
         SEARCH_QUERY = 'afrique voiture'
 
@@ -487,18 +494,27 @@ class TestGenericKohaSearch(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # TODO add this new assert to the other query related tests
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name="koha-search")
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == koha_search_prov.name
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("Transafrique", results)
         assert is_substring_in("L'amour a le goût des fraises", results)
         assert is_substring_in("Les chemins de Mahjouba", results)
 
-    def test_search_works_with_unicode_query(self, client, tmp_db, bulac_prov):
+    def test_search_works_with_unicode_query(self, client, tmp_db, koha_search_prov):
         # This search returns only a few results (in japanese)
         SEARCH_QUERY = '龍 車 日'  # dragon car day
 
@@ -518,16 +534,16 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        assert is_div(data, cls_name=HtmlClasses.RESULT)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("新疆史志", results)
         assert is_substring_in("永井龍男集", results)
 
-    def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, bulac_prov):
+    def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, koha_search_prov):
         # This search returns absolutly no result
         SEARCH_QUERY = 'zxkml'
 
@@ -547,9 +563,14 @@ class TestGenericKohaSearch(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)
+        assert is_div(data, cls_name=HtmlClasses.NO_RESULT)
 
-    def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == koha_search_prov.name
+
+    def test_links_are_fullpath(self, client, tmp_db, koha_search_prov):
         # This search returns only a few results
         SEARCH_QUERY = 'afrique voiture'
 
@@ -568,6 +589,10 @@ class TestGenericKohaSearch(object):
 
 @bulac_test_only
 class TestGenericKohaBooklist(object):
+    @pytest.fixture
+    def koha_booklist_prov(bulac_prov):
+        return bulac_prov['koha-search']
+
     def _build_url(self, param):
         BASE_URL = '/providers/koha-booklist/'
 
@@ -577,7 +602,7 @@ class TestGenericKohaBooklist(object):
 
         return url
 
-    def test_koha_booklist_is_a_provider(self, client, tmp_db, bulac_prov):
+    def test_koha_booklist_is_a_provider(self, client, tmp_db, koha_booklist_prov):
         URL = '/status/koha-booklist'
         response = client.get(URL)
 
@@ -618,7 +643,7 @@ class TestGenericKohaBooklist(object):
         # We have an answer...
         assert response.status_code == NOT_FOUND
 
-    def test_return_result_partial_if_result_are_found(self, client, tmp_db, bulac_prov):
+    def test_return_result_partial_if_result_are_found(self, client, tmp_db, koha_booklist_prov):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
@@ -638,12 +663,17 @@ class TestGenericKohaBooklist(object):
         data = response.get_data(as_text=True)
 
         # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        assert is_div(data, cls_name=HtmlClasses.RESULT)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == koha_booklist_prov.name
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert is_substring_in("Africa in Russia, Russia in Africa", results)
         assert is_substring_in("Cahiers d'études africaines", results)
         assert is_substring_in("Étudier à l'Est", results)
@@ -652,7 +682,7 @@ class TestGenericKohaBooklist(object):
         assert is_substring_in("Revue européenne des migrations internationales", results)
         assert is_substring_in("The Cold War in the Third World", results)
 
-    def test_links_are_fullpath(self, client, tmp_db, bulac_prov):
+    def test_links_are_fullpath(self, client, tmp_db, koha_booklist_prov):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
@@ -853,18 +883,26 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name
 
         # ...with many answer divs
         assert has_div_with_class(
             data,
-            cls_name=mincer.HtmlClasses.RESULT_ITEM)
+            cls_name=HtmlClasses.RESULT_ITEM)
 
         # And we have the correct books in it
         results = all_div_content(
             data,
-            query=mincer.HtmlClasses.result_item_query())
+            query=HtmlClasses.result_item_query())
         assert "Result number 1" in results
         assert "Result number 2" in results
         assert "Result number 3" in results
@@ -887,13 +925,21 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name
 
         # And we have the correct books in it
         results = all_div_content(data, query=".{surrounding} .{item}".format(
-            surrounding=mincer.HtmlClasses.RESULT,
-            item=mincer.HtmlClasses.RESULT_ITEM))
+            surrounding=HtmlClasses.RESULT,
+            item=HtmlClasses.RESULT_ITEM))
         assert "Result with japanese 新疆史志" in results
         assert "Result with japanese 永井龍男集" in results
 
@@ -914,5 +960,13 @@ class TestWithFakeProvider(object):
         # Let's convert it for easy inspection
         data = response.get_data(as_text=True)
 
-        # ...containing only a <div>
-        assert is_div(data, cls_name=mincer.HtmlClasses.NO_RESULT)
+        # ...containing a <div> with correct class and id
+        assert is_div(
+            data,
+            cls_name=HtmlClasses.NO_RESULT,
+            id_name=fake_prov.slug)
+
+        # And we have the provider info in it
+        assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
+        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
+        assert prov_name == fake_prov.name

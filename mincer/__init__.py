@@ -132,8 +132,15 @@ class HtmlClasses(object):
             cls_out=HtmlClasses.RESULT,
             cls_in=HtmlClasses.RESULT_ITEM)
 
-    """Class used to mark each result returned."""
-    RESULT_ITEM = "result-item"
+    """Class used to embed provider name."""
+    PROVIDER = "mincer-provider"
+
+    @staticmethod
+    def provider_query():
+        return ".{cls_rslt}>.{cls_prov}, .{cls_no_rslt}>.{cls_prov}".format(
+            cls_rslt=HtmlClasses.RESULT,
+            cls_no_rslt=HtmlClasses.NO_RESULT,
+            cls_prov=HtmlClasses.PROVIDER)
 
 
 # TODO: Add a selectors_to_remove list of selector that target nodes to remove
@@ -257,7 +264,7 @@ def load_bulac_db():
     # Commit the transaction
     db.session.commit()
 
-    return providers
+    return {prov.name: prov for prov in providers}
 
 
 def load_demo_db():
@@ -285,7 +292,7 @@ def load_demo_db():
     # Commit the transaction
     db.session.commit()
 
-    return providers
+    return {prov.name: prov for prov in providers}
 
 
 @app.cli.command('initdb')
@@ -615,14 +622,16 @@ def providers(provider_slug, param):
             html=page,
             base_url=remote_host)
         # Pack them in a surrounding answer div and return it
-        return utils.pack_divs(
+        return utils.pack_all_div(
             divs=answer_divs,
             wrapall_class=HtmlClasses.RESULT,
-            wrapitem_class=HtmlClasses.RESULT_ITEM)
+            wrapitem_class=HtmlClasses.RESULT_ITEM,
+            provider=provider)
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
-            'found in it\'s result page using matching expr "%s". Now searching for a no result '
+            'found in it\'s result page using matching expr "%s". '
+            'Now searching for a no result '
             'structure...',
             provider_slug,
             unquote_plus(param),
@@ -637,9 +646,10 @@ def providers(provider_slug, param):
             provider.no_result_selector,
             provider.no_result_content,
             page)
-        return PyQuery(no_answer_div)\
-            .add_class(HtmlClasses.NO_RESULT)\
-            .outer_html()
+        return utils.pack_one_div(
+            div=no_answer_div,
+            wrap_class=HtmlClasses.NO_RESULT,
+            provider=provider)
     except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(

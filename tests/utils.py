@@ -43,17 +43,19 @@ def is_html5_page(page):
     return has_doctype and has_html_open_tag and has_html_close_tag
 
 
-def is_div(partial, cls_name=None):
+def is_div(partial, cls_name=None, id_name=None):
     """Helper function to detect if we have a well formated div partial.
 
     Params:
         partial (str): an HTML content (partial HTML code) page to test.
         class_name (str|None): if not `None` the name of the class that the div
             in `partial` must have.
+        id_name (str|None): if not `None` the name of the id that the div
+            in `partial` must have.
 
     Returns:
         bool: True if `partial` is a well formated div page with the provided
-            class (if provided), False if not.
+            class (if provided) and id (if provided), False if not.
 
     Examples:
         >>> is_div("<div>Plop</div>")
@@ -70,12 +72,23 @@ def is_div(partial, cls_name=None):
 
         >>> is_div('<div class="useless">Plop</div>', "useful")
         False
+
+        >>> is_div('<div class="useful" id="cat">Plop</div>', "useful", "cat")
+        True
+
+        >>> is_div('<div class="useful" id="dog">Plop</div>', "useful", "cat")
+        False
+
+        >>> is_div('<div class="useful">Plop</div>', "useful", "cat")
+        False
     """
     d = PyQuery(partial)
-    if cls_name:
-        return d.is_("div") and d.has_class(cls_name)
-    else:
-        return d.is_("div")
+
+    div_ok = d.is_("div")
+    cls_ok = d.has_class(cls_name) if cls_name else True
+    id_ok = d.is_("#%s" % id_name) if id_name else True
+
+    return div_ok and cls_ok and id_ok
 
 
 def has_div_with_class(partial, cls_name):
