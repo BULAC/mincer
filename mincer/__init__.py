@@ -137,8 +137,9 @@ class HtmlClasses(object):
 
     @staticmethod
     def provider_query():
-        return ".{cls_out}>.{cls_prov}".format(
-            cls_out=HtmlClasses.RESULT,
+        return ".{cls_rslt}>.{cls_prov}, .{cls_no_rslt}>.{cls_prov}".format(
+            cls_rslt=HtmlClasses.RESULT,
+            cls_no_rslt=HtmlClasses.NO_RESULT,
             cls_prov=HtmlClasses.PROVIDER)
 
 
@@ -621,7 +622,7 @@ def providers(provider_slug, param):
             html=page,
             base_url=remote_host)
         # Pack them in a surrounding answer div and return it
-        return utils.pack_divs(
+        return utils.pack_all_div(
             divs=answer_divs,
             wrapall_class=HtmlClasses.RESULT,
             wrapitem_class=HtmlClasses.RESULT_ITEM,
@@ -629,7 +630,8 @@ def providers(provider_slug, param):
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
-            'found in it\'s result page using matching expr "%s". Now searching for a no result '
+            'found in it\'s result page using matching expr "%s". '
+            'Now searching for a no result '
             'structure...',
             provider_slug,
             unquote_plus(param),
@@ -644,9 +646,10 @@ def providers(provider_slug, param):
             provider.no_result_selector,
             provider.no_result_content,
             page)
-        return PyQuery(no_answer_div)\
-            .add_class(HtmlClasses.NO_RESULT)\
-            .outer_html()
+        return utils.pack_one_div(
+            div=no_answer_div,
+            wrap_class=HtmlClasses.NO_RESULT,
+            provider=provider)
     except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(
