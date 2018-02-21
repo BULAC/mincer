@@ -264,7 +264,7 @@ def load_bulac_db():
     # Commit the transaction
     db.session.commit()
 
-    return providers
+    return {prov.name: prov for prov in providers}
 
 
 def load_demo_db():
@@ -292,7 +292,7 @@ def load_demo_db():
     # Commit the transaction
     db.session.commit()
 
-    return providers
+    return {prov.name: prov for prov in providers}
 
 
 @app.cli.command('initdb')
