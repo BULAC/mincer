@@ -422,8 +422,8 @@ class TestWebInterface(object):
 @bulac_test_only
 class TestGenericKohaSearch(object):
     @pytest.fixture
-    def koha_search_prov(bulac_prov):
-        return bulac_prov['koha-search']
+    def koha_search_prov(self, bulac_prov):
+        return bulac_prov['koha search']
 
     def _build_url(self, param):
         BASE_URL = '/providers/koha-search/'
@@ -590,8 +590,8 @@ class TestGenericKohaSearch(object):
 @bulac_test_only
 class TestGenericKohaBooklist(object):
     @pytest.fixture
-    def koha_booklist_prov(bulac_prov):
-        return bulac_prov['koha-search']
+    def koha_booklist_prov(self, bulac_prov):
+        return bulac_prov['koha booklist']
 
     def _build_url(self, param):
         BASE_URL = '/providers/koha-booklist/'
@@ -903,9 +903,9 @@ class TestWithFakeProvider(object):
         results = all_div_content(
             data,
             query=HtmlClasses.result_item_query())
-        assert "Result number 1" in results
-        assert "Result number 2" in results
-        assert "Result number 3" in results
+        assert is_substring_in("Result number 1", results)
+        assert is_substring_in("Result number 2", results)
+        assert is_substring_in("Result number 3", results)
 
     def test_search_works_with_unicode_query(self, client, tmp_db, fake_serv, fake_prov):
         # A query with some japanese
@@ -940,8 +940,8 @@ class TestWithFakeProvider(object):
         results = all_div_content(data, query=".{surrounding} .{item}".format(
             surrounding=HtmlClasses.RESULT,
             item=HtmlClasses.RESULT_ITEM))
-        assert "Result with japanese 新疆史志" in results
-        assert "Result with japanese 永井龍男集" in results
+        assert is_substring_in("Result with japanese 新疆史志", results)
+        assert is_substring_in("Result with japanese 永井龍男集", results)
 
     def test_return_a_no_result_partial_if_no_result_are_found(self, client, tmp_db, fake_serv, fake_prov):
         QUERY = "search without result"
