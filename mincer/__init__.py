@@ -64,9 +64,6 @@ from flask import abort
 from flask_sqlalchemy import SQLAlchemy
 import sqlalchemy
 
-# To manipulate HTML DOM using JQuery query syntax
-from pyquery import PyQuery
-
 # HTTP library for Python, safe for human consumption
 # See http://docs.python-requests.org/en/master/
 import requests
@@ -74,6 +71,11 @@ import requests
 # A Python slugify application that handles unicode.
 # See https://github.com/un33k/python-slugify
 from slugify import slugify
+
+# Library to easily generate HTML pages or fragments
+# See https://github.com/Knio/dominate
+from dominate.tags import div
+from dominate.util import raw
 
 # Convenient constant for HTTP status codes
 try:
@@ -621,12 +623,13 @@ def providers(provider_slug, param):
             selector=provider.result_selector,
             html=page,
             base_url=remote_host)
-        # Pack them in a surrounding answer div and return it
-        return utils.pack_all_div(
-            divs=answer_divs,
-            wrapall_class=HtmlClasses.RESULT,
-            wrapitem_class=HtmlClasses.RESULT_ITEM,
-            provider=provider)
+        # Generate the result page and return it
+        result = div(_class=HtmlClasses.RESULT, id=provider.slug)
+        with result:
+            div(provider.name, _class=HtmlClasses.PROVIDER,)
+            for item in answer_divs:
+                div(raw(item), _class=HtmlClasses.RESULT_ITEM)
+        return result.render()
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
@@ -646,10 +649,12 @@ def providers(provider_slug, param):
             provider.no_result_selector,
             provider.no_result_content,
             page)
-        return utils.pack_one_div(
-            div=no_answer_div,
-            wrap_class=HtmlClasses.NO_RESULT,
-            provider=provider)
+        # Generate the result page and return it
+        result = div(_class=HtmlClasses.NO_RESULT, id=provider.slug)
+        with result:
+            div(provider.name, _class=HtmlClasses.PROVIDER,)
+            raw(no_answer_div)
+        return result.render()
     except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(
