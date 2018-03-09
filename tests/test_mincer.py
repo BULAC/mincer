@@ -69,6 +69,8 @@ from tests.utils import (
     has_div_with_class,
     is_substring_in)
 
+from dominate.util import escape as dominescape
+
 # Test framework that helps you write better programs !
 import pytest
 
@@ -479,8 +481,8 @@ class TestGenericKohaSearch(object):
         # This search returns only a few results
         SEARCH_QUERY = 'afrique voiture'
 
-        url = self._build_url(SEARCH_QUERY)
-        response = client.get(url)
+        URL = self._build_url(SEARCH_QUERY)
+        response = client.get(URL)
 
         # We have an answer...
         assert response.status_code == OK
@@ -503,8 +505,11 @@ class TestGenericKohaSearch(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == koha_search_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(koha_search_prov.name, prov_data)
+        REMOTE_URL = koha_search_prov.remote_url.format(
+            param=quote_plus(SEARCH_QUERY))
+        assert is_substring_in(dominescape(REMOTE_URL), prov_data)
 
         # And we have the correct books in it
         results = all_div_content(
@@ -547,8 +552,8 @@ class TestGenericKohaSearch(object):
         # This search returns absolutly no result
         SEARCH_QUERY = 'zxkml'
 
-        url = self._build_url(SEARCH_QUERY)
-        response = client.get(url)
+        URL = self._build_url(SEARCH_QUERY)
+        response = client.get(URL)
 
         # We have an answer...
         assert response.status_code == OK
@@ -567,8 +572,11 @@ class TestGenericKohaSearch(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == koha_search_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(koha_search_prov.name, prov_data)
+        REMOTE_URL = koha_search_prov.remote_url.format(
+            param=quote_plus(SEARCH_QUERY))
+        assert is_substring_in(dominescape(REMOTE_URL), prov_data)
 
     def test_links_are_fullpath(self, client, tmp_db, koha_search_prov):
         # This search returns only a few results
@@ -647,8 +655,8 @@ class TestGenericKohaBooklist(object):
         # We are using the ID of of an existing list
         LIST_ID = "9896"
 
-        url = self._build_url(LIST_ID)
-        response = client.get(url)
+        URL = self._build_url(LIST_ID)
+        response = client.get(URL)
 
         # We have an answer...
         assert response.status_code == OK
@@ -667,8 +675,11 @@ class TestGenericKohaBooklist(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == koha_booklist_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(koha_booklist_prov.name, prov_data)
+        REMOTE_URL = koha_booklist_prov.remote_url.format(
+            param=quote_plus(LIST_ID))
+        assert is_substring_in(dominescape(REMOTE_URL), prov_data)
 
         # And we have the correct books in it
         results = all_div_content(
@@ -891,8 +902,10 @@ class TestWithFakeProvider(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == fake_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(fake_prov.name, prov_data)
+        REMOTE_URL = fake_prov.remote_url.format(param=quote_plus(QUERY))
+        assert is_substring_in(REMOTE_URL, prov_data)
 
         # ...with many answer divs
         assert has_div_with_class(
@@ -933,8 +946,10 @@ class TestWithFakeProvider(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == fake_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(fake_prov.name, prov_data)
+        REMOTE_URL = fake_prov.remote_url.format(param=quote_plus(QUERY))
+        assert is_substring_in(REMOTE_URL, prov_data)
 
         # And we have the correct books in it
         results = all_div_content(data, query=".{surrounding} .{item}".format(
@@ -968,5 +983,7 @@ class TestWithFakeProvider(object):
 
         # And we have the provider info in it
         assert has_div_with_class(data, cls_name=HtmlClasses.PROVIDER)
-        [prov_name] = all_div_content(data, query=HtmlClasses.provider_query())
-        assert prov_name == fake_prov.name
+        prov_data = all_div_content(data, query=HtmlClasses.provider_query())
+        assert is_substring_in(fake_prov.name, prov_data)
+        REMOTE_URL = fake_prov.remote_url.format(param=quote_plus(QUERY))
+        assert is_substring_in(REMOTE_URL, prov_data)
