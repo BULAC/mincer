@@ -30,8 +30,8 @@ __license__ = "GNU AGPL V3"
 
 # import pdb
 
-# To decode form-encoded values
-from urllib.parse import unquote_plus
+# To encode/decode form-encoded values
+from urllib.parse import quote_plus, unquote_plus
 
 # To manipulate path
 import os
@@ -60,6 +60,9 @@ from flask import render_template
 # For easy redirecting to error page
 from flask import abort
 
+# To mark string as safe markup preventing it from being escaped
+from flask import Markup
+
 # For easy database ~ python binding c.f. http://www.sqlalchemy.org/
 from flask_sqlalchemy import SQLAlchemy
 import sqlalchemy
@@ -74,7 +77,7 @@ from slugify import slugify
 
 # Library to easily generate HTML pages or fragments
 # See https://github.com/Knio/dominate
-from dominate.tags import div
+from dominate.tags import div, a
 from dominate.util import raw
 
 # Convenient constant for HTTP status codes
@@ -605,7 +608,8 @@ def providers(provider_slug, param):
         abort(NOT_FOUND)
 
     # Build the full remote url by replacing param
-    full_remote_url = provider.remote_url.format(param=param)
+    # HACK param is weirdly semi encoded so we need to unquote/requote it...
+    full_remote_url = provider.remote_url.format(param=quote_plus(unquote_plus(param)))
 
     # Extract the base url from the full url
     remote_host = utils.get_base_url(full_remote_url)
@@ -626,10 +630,10 @@ def providers(provider_slug, param):
         # Generate the result page and return it
         result = div(_class=HtmlClasses.RESULT, id=provider.slug)
         with result:
-            div(provider.name, _class=HtmlClasses.PROVIDER,)
+            div(a(provider.name, href=full_remote_url), _class=HtmlClasses.PROVIDER)
             for item in answer_divs:
                 div(raw(item), _class=HtmlClasses.RESULT_ITEM)
-        return result.render()
+        return Markup(result.render())
     except utils.NoMatchError:
         app.logger.info(
             'Provider %s was asked for "%s" but no result structure could be '
@@ -652,9 +656,9 @@ def providers(provider_slug, param):
         # Generate the result page and return it
         result = div(_class=HtmlClasses.NO_RESULT, id=provider.slug)
         with result:
-            div(provider.name, _class=HtmlClasses.PROVIDER,)
+            div(a(provider.name, href=full_remote_url), _class=HtmlClasses.PROVIDER)
             raw(no_answer_div)
-        return result.render()
+        return Markup(result.render())
     except utils.NoMatchError as e:
         # TODO: test this behavior
         app.logger.error(
