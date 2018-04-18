@@ -29,6 +29,8 @@ along with Mincer.  If not, see `GNU licences <http://www.gnu.org/licenses/>`_.
 Installation
 ============
 
+Cette documentation est disponible à cette adresse: <https://github.com/BULAC/mincer>
+
 Installation de python3 et pip3
 -------------------------------
 
@@ -39,11 +41,9 @@ Installation de python3 et pip3
 Récupération du code sur github
 -------------------------------
 
-TODO: a compléter
-
 .. code-block:: bash
 
-	git clone BLABLABLA
+	git clone https://github.com/BULAC/mincer.git
 	cd mincer
 
 Les outils de base : python3 et pip
@@ -53,19 +53,43 @@ Les outils de base : python3 et pip
 
 	sudo apt install python3 python3-pip
 
+Il est important que l'utilisateur qui lancera ou developpera mincer ait dans son path ``$HOME/.local/bin``. Pour cela on s'assure que ``$HOME/.local/bin`` est bien dans le path l'utilisateur qui lancera ou developpera Mincer car ce n'est pas le cas par défaut sur debian et ubuntu. Il faut ajouter à la fin de ``~/.profile`` (ou de ``~/.bashrc`` ça revient au même) ou si vous utilisez **zsh** c'est directement dans ``~/.zshrc`` :
+
+.. code-block:: bash
+
+	PATH=$PATH:$HOME/.local/bin
+
+Pour valider ce changement il faut sourcer le fichier en question (n'exécuter que la commande correspondant au fichier que vous avez modifié) :
+
+.. code-block:: bash
+
+	source ~/.profile
+	source ~/.bashrc
+	source ~/.zshrc
+
 Puis on lance l'initialisation du projet en mode dev ce qui récupérera toutes les dépendances du code et des outils automatiquement :
 
 .. code-block:: bash
 
 	make initdev
 
-si ça ne marche pas on s'assure que ``~/.local/bin`` est bien dans le path car ce n'est pas le cas par défaut sur debian et ubuntu. Il faut ajouter ça dans ``~/.profile`` ou si vous utilisez **zsh** c'est directement dans ``~/.zshrc``.
-
 Le make file utilise l'outil `pipenv <https://github.com/kennethreitz/pipenv>`_ pour gérer toutes les dépendances. Pour plus d'info là-dessus je conseil vivement `pipenv, solution moderne pour remplacer pip et virtualenv <http://sametmax.com/pipenv-solution-moderne-pour-remplacer-pip-et-virtualenv>`_ et bien sûr `la doc de pipenv <https://docs.pipenv.org/>`_.
 
 Maintenant on a un environnement virtuel pour travailler.
 
-Initialiser la base de données
+
+Activer l'environnement virtuel
+-------------------------------
+
+**Ceci doit être fait une et une seule fois à chaque fois que l'on veut travailler sur le projet ou qu'on veut le lancer.** Je renvoie à la doc de pipenv pour comprendre pourquoi exactement. Mais basiquement cela active toute les dépendances du projet dans un environnement virtuel.
+
+.. code-block:: bash
+
+	pipenv shell
+
+(si tout se passe bien le prompt doit changer)
+
+Initialiser la base de données (permet aussi de remettre a zero)
 ------------------------------
 
 Il faut commencer par initialiser la base de donnée (creation des schema et chargement de la configuration de base :
@@ -79,6 +103,10 @@ Puis si besoin on peut charger quelques providers d'exemple:
 .. code-block:: bash
 
 	make loadbulacdb
+
+Ces 2 commandes permettent aussi de remettre à zéro la baser de donnée si jamais elle est rendue inutilisable d'une façon ou d'une autre.
+
+Si on souhaite sauvegarder ou restaurer la base de données, celle-ci est en fait contenu dans un seul fichier ``instance/mincer.db`` qu'il suffit de copier/coller. C'est ce fichier que les 2 commandes précédentes crée et remplissent.
 
 Lancer le serveur Mincer
 ------------------------
