@@ -130,6 +130,18 @@ La lecture du fichier **Makefile** peut être très instructive pour voir les di
 Guide d'utilisation
 ===================
 
+Ajouter un fournisseur
+----------------------
+
+Une fois arrivé sur la page d'ajout d'un fournisseur, il faut remplir chaque champs demandé :
+
+- **Name** le nom usuel du fournisseur. Avec es espace et des accents si vous voulez.
+- **Remote url** l'url du site fournissant les données. Pour l'obtenir, aller sur le site du fournisseur, tapez une recherche **avec un seul mot** et lancez là. Une fois les résultats affiché, récupérez l'adresse de la page de résultat. Elle est composée de 2 parties : l'adresse elle même (tout ce qui se trouve avant le ``?``) et les paramètres (qui se trouve après le ``?`` et son séparé par des ``&`` et sont de la forme ``nom=valeur``). Il faut essayer de trouver l'url la plus simple possible qui donne le bon résultat (souvent de nombreux paramètres sont inutiles pour nous) pour cela essayez d'enlever tous les paramètres sauf celui dont la valeur est votre recherche. Une fois qois que vous avez trouvé l'url **minimum** copié la dans le champ **Remote url** en remplaçant le mot que vous aviez recherché par ``{param}`` (le mot param entouré d'accolades).
+- **Result selector** il s'agit de la description sous forme de chemin CSS d'un résultat (pas de l'ensemble des résultats mais bien d'un seul). Pour l'obtenir il suffit d'a&fficher ue page de résultat du fournisseur et de l'analyser avec l'outil de développement de votre navigateur (Firefox et Chrome possède exactement le même). Appuyez sur :kbd:`F12` ou :kbd:`Ctrl + Maj + i`. puis dans l'onglet ``Inspecteur`` il y a un champ ``Rechercher dans le HTML`` qui permet de taper directement un sélecteur JQuery. Par exemple sur la page `<http://bulac.fr>`_ si on rentre le sélecteur ``#contenu .colonne-milieu-BULAC`` cela sélectionne dans l'inspecteur la colonne centrale de la page. On peut aussi utiliser le curseur (icône avec une petit flêche de souris sur un carré) qui permet de sélectionner l'élément à la souris directement. Il apparait alors surligné dans le code de l'inspecteur. On peut alors faire un simple clis-droit sur cet élément du code et sélectionner **copier...** puis **le chemin CSS**. Attention toute fois le chemin CSS ainsi obtenu est souvent trop long/précis pour donner de bon résultat dans tous les cas... la partie importante est la fin du chemin essayer dans le champ ``Rechercher dans le HTML`` de ne rentrer que la fin pour voir quel est le minimum à rentrer pour obtenir le bon résultat. Une fois qois que vous avez trouvé le chemin CSS **minimum** copié la dans le champ **Result selector**. Attention ce champ doit contenir au minimum une classe CSS (c'est un mot précédé d'un point dans le sélecteur) alors que firefox/chrome arrive a faire des recherche même avec moins que ça !
+- **No result selector** fonctionne exactement que le **Result selector** mais on doit rechercher l'élément affiché dans une réponse qui n'a donné aucune réponse (souvent un message du type ``pas de réponse``). Cet élément ne sera teste QUE SI IL N'A EU AUCUNE RÉPONSE DE DÉTECTÉE PAR MINCER.
+- **No result content** parfois les moteurs de recherche font très peu d'effort de mise en forme pour le cas pas de réponse. Donc il est difficile de les repérer juste pas le chemin CSS du **No result selector**. Dans ce cas là Miner va juste chercher une chaîne de caractère toute bête dans la page. Si la page de pas de résultat affiche juste un message copier coller le ici. Ce champ n'est pas obligatoire.
+
+
 Sélectionner un ``div`` particulier
 -----------------------------------
 
