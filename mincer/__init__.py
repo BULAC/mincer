@@ -485,7 +485,6 @@ def provider_new():
 # TODO: merge this with providers()
 @app.route("/provider", methods=['POST'])
 def provider():
-    app.logger.info("I'm there")
     # Check if we have only the correct keys from the form
     PROVIDER_KEYS = frozenset({
         "name",
@@ -495,7 +494,6 @@ def provider():
         "no-result-content",
         })
     FORM_KEYS = frozenset([k for k in request.form.keys()])
-    app.logger.info("I'm there too")
     if PROVIDER_KEYS != FORM_KEYS:
         app.logger.error(
             "Form data provided %s do not match"
@@ -505,7 +503,6 @@ def provider():
             )
         return "toto", BAD_REQUEST
 
-    app.logger.info("I'm there toutou")
     # TODO: check for errors
     # TODO: check for existing provider with same name/slug
 
@@ -516,8 +513,6 @@ def provider():
         no_result_selector=request.form["no-result-selector"],
         no_result_content=request.form["no-result-content"])
 
-    app.logger.info("I'm there woof")
-
     # Add them to the database
     db.session.add(new_provider)
 
@@ -527,8 +522,6 @@ def provider():
     # TODO: send a message and display a result page
     flash("Provider {name} added successfully!".format(
         name=new_provider.name), "alert-success")
-
-    app.logger.info("I'm there wouaf")
 
     return render_template(
         "provider.html",
@@ -575,6 +568,41 @@ def example(provider_slug):
         provider=provider,
         title=provider.name,
         subtitle="Test query")
+
+# TODO: test this !!!!
+@app.route("/remove/<string:provider_slug>")
+def remove(provider_slug):
+    """
+    Remove a provider from the database.
+
+    :query string provider_slug: slugified name of the provider to remove as
+        registered in the database in the database.
+
+    :status 200: everything was ok
+
+    .. :quickref: Remove; Remove a provider.
+    """
+    try:
+        # Retreive the provider from database...
+        prov = Provider.query.filter_by(slug=provider_slug).first()
+        app.logger.info(
+            "provider to remove %s with slug %s", prov, provider_slug)
+
+        # ...then delete it c.f. https://stackoverflow.com/questions/19243964/sqlalchemy-delete-doesnt-cascade
+        db.session.delete(prov)
+        db.session.commit()
+
+        flash(
+            "Provider {slug} removed successfully!".format(slug=provider_slug),
+            "alert-success")
+    except Exception as e:
+        db.session.rollback()
+        flash(
+            "Error while removing Provider {slug}. Nothing removed.".format(slug=provider_slug),
+            "alert-error")
+
+    # Return to the home page with a message
+    return redirect(url_for("home"))
 
 
 @app.route("/providers/<string:provider_slug>/<string:param>")

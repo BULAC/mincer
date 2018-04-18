@@ -85,6 +85,12 @@
 				href="{{ url_for('example', provider_slug=provider.slug) }}">
 					Test this provider
 				</a>
+				<a
+				class="btn btn-outline-danger btn-lg col-sm"
+				role="button"
+				href="{{ url_for('remove', provider_slug=provider.slug) }}">
+					Remove this provider
+				</a>
 			</div> <!-- /.row -->
 		</div> <!-- /.container -->
 	</section>
