@@ -661,13 +661,14 @@ def providers(provider_slug, param):
         return Markup(result.render())
     except utils.NoMatchError as e:
         # TODO: test this behavior
-        app.logger.error(
-            'Provider %s was asked for "%s" but neither result structure nor '
-            'a no result message could be found in it\'s result page. The '
-            'remote url used was <%s>.',
-            provider_slug,
-            unquote_plus(param),
-            full_remote_url)
-        raise e
+        msg = 'Provider {prov} was asked for "{query}" but neither result structure nor '\
+              'a no result message could be found in it\'s result page. The '\
+              'remote url used was <{url}>.'.format(
+                prov=provider_slug,
+                query=unquote_plus(param),
+                url=full_remote_url)
+        app.logger.error(msg)
+        # raise e
         # TODO: replace this with a valide answer
-        abort(BAD_REQUEST)
+        # abort(BAD_REQUEST)
+        return Markup(msg)
