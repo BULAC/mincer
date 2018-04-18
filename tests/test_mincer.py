@@ -515,9 +515,9 @@ class TestGenericKohaSearch(object):
         results = all_div_content(
             data,
             query=HtmlClasses.result_item_query())
-        assert is_substring_in("Transafrique", results)
-        assert is_substring_in("L'amour a le goût des fraises", results)
-        assert is_substring_in("Les chemins de Mahjouba", results)
+        assert is_substring_in("Différenciation régionale et régionalisation en Afrique francophone et à Madagascar", results)
+        assert is_substring_in("Qui se nourrit de la famine en Afrique ?", results)
+        assert is_substring_in("Les jachères en Afrique tropicale", results)
 
     def test_search_works_with_unicode_query(self, client, tmp_db, koha_search_prov):
         # This search returns only a few results (in japanese)
